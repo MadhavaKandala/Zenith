@@ -1,0 +1,13 @@
+{
+  "$schema": "../../../schemas/skill-schemas/skill.json",
+  "name": "Q&A",
+  "bridge": "python",
+  "version": "1.0.0",
+  "description": "Route open-ended questions to the configured LLM.",
+  "author": {
+    "name": "Zenith",
+    "email": "",
+    "url": ""
+  }
+}
+

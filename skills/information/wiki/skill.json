@@ -1,0 +1,13 @@
+{
+  "$schema": "../../../schemas/skill-schemas/skill.json",
+  "name": "Wiki",
+  "bridge": "python",
+  "version": "1.0.0",
+  "description": "Search Wikipedia and summarize results.",
+  "author": {
+    "name": "Zenith",
+    "email": "",
+    "url": ""
+  }
+}
+

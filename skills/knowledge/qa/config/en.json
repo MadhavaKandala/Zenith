@@ -1,0 +1,24 @@
+{
+  "$schema": "../../../../schemas/skill-schemas/skill-config.json",
+  "actions": {
+    "answer": {
+      "type": "logic",
+      "utterance_samples": [
+        "Answer this question",
+        "Can you explain black holes",
+        "What is reinforcement learning",
+        "Question: how do rockets work"
+      ],
+      "answers": [
+        "%response%",
+        "Here's the answer: %response%"
+      ],
+      "unknown_answers": [
+        "I couldn't generate an answer right now.",
+        "The question routing failed before I got a response."
+      ]
+    }
+  },
+  "answers": {}
+}
+

@@ -5,6 +5,8 @@ import Client from './client'
 import Recorder from './recorder'
 import listener from './listener'
 import { onkeydowndocument, onkeydowninput } from './onkeydown'
+import { initOrb, setOrbState } from './orb.js'
+import { addToolEvent } from './monitor.js'
 
 const config = {
   app: 'webapp',
@@ -19,6 +21,17 @@ const serverUrl =
     : `${config.server_host}:${config.server_port}`
 
 document.addEventListener('DOMContentLoaded', async () => {
+  const updateClock = () => {
+    const clock = document.getElementById('hud-clock')
+    if (clock) clock.textContent = new Date().toLocaleTimeString()
+  }
+
+  initOrb()
+  updateClock()
+  setInterval(updateClock, 1000)
+  setOrbState('idle')
+  addToolEvent({ tool: 'system:boot', timestamp: Date.now() })
+
   const loader = new Loader()
 
   loader.start()

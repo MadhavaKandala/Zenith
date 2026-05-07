@@ -1,0 +1,13 @@
+{
+  "$schema": "../../../schemas/skill-schemas/skill.json",
+  "name": "YouTube",
+  "bridge": "python",
+  "version": "1.0.0",
+  "description": "Search YouTube in the browser.",
+  "author": {
+    "name": "Zenith",
+    "email": "",
+    "url": ""
+  }
+}
+

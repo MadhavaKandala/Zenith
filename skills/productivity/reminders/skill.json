@@ -1,0 +1,13 @@
+{
+  "$schema": "../../../schemas/skill-schemas/skill.json",
+  "name": "Reminders",
+  "bridge": "python",
+  "version": "1.0.0",
+  "description": "Create, list, and delete reminders.",
+  "author": {
+    "name": "Zenith",
+    "email": "",
+    "url": ""
+  }
+}
+

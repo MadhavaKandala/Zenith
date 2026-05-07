@@ -1,6 +1,8 @@
 import { io } from 'socket.io-client'
 
 import Chatbot from './chatbot'
+import { setOrbState } from './orb.js'
+import { addToolEvent } from './monitor.js'
 
 export default class Client {
   constructor(client, serverUrl, input, res) {
@@ -54,6 +56,17 @@ export default class Client {
 
     this.socket.on('is-typing', (data) => {
       this.chatbot.isTyping('leon', data)
+    })
+
+    this.socket.on('zenith:tool_call', (data) => {
+      addToolEvent({
+        tool: data.tool || 'unknown',
+        timestamp: Date.now()
+      })
+    })
+
+    this.socket.on('zenith:state_change', (data) => {
+      setOrbState(data.state || 'idle')
     })
 
     this.socket.on('recognized', (data, cb) => {

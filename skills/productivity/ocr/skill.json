@@ -1,0 +1,13 @@
+{
+  "$schema": "../../../schemas/skill-schemas/skill.json",
+  "name": "OCR",
+  "bridge": "python",
+  "version": "1.0.0",
+  "description": "Extract text from an image.",
+  "author": {
+    "name": "Zenith",
+    "email": "",
+    "url": ""
+  }
+}
+
