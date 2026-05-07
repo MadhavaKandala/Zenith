@@ -1,0 +1,15 @@
+{
+  "answered": [
+    "%response%",
+    "Here's the answer: %response%"
+  ],
+  "error": [
+    "I couldn't generate an answer right now.",
+    "The question routing failed before I got a response."
+  ],
+  "missing_api_key": [
+    "The Gemini API key is missing from the environment.",
+    "I need GOOGLE_API_KEY before I can answer that."
+  ]
+}
+

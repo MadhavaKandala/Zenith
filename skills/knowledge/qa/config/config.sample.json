@@ -1,0 +1,5 @@
+{
+  "qa": {
+    "google_api_key_env": "GOOGLE_API_KEY"
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "reminder_created": [
+    "Reminder set: %text%. I'll notify you at the right time, sir.",
+    "Done. I've scheduled a reminder for %text%."
+  ],
+  "reminders_list": [
+    "Here are your active reminders: %list%",
+    "You have %count% reminder(s): %list%"
+  ],
+  "no_reminders": [
+    "You have no active reminders, sir.",
+    "Your schedule is clear."
+  ],
+  "reminder_deleted": [
+    "Reminder deleted.",
+    "Consider it gone."
+  ]
+}
+

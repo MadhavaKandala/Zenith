@@ -3,7 +3,32 @@
     "en-US": {
       "short": "en",
       "min_confidence": 0.5,
-      "fallbacks": []
+      "fallbacks": [
+        {
+          "words": ["remind", "reminder"],
+          "domain": "productivity",
+          "skill": "reminders",
+          "action": "create_reminder"
+        },
+        {
+          "words": ["news", "headlines"],
+          "domain": "information",
+          "skill": "news",
+          "action": "get_headlines"
+        },
+        {
+          "words": ["open", "website", "browse", "chrome"],
+          "domain": "automation",
+          "skill": "chrome",
+          "action": "open_website"
+        },
+        {
+          "words": ["answer", "question"],
+          "domain": "knowledge",
+          "skill": "qa",
+          "action": "answer"
+        }
+      ]
     },
     "fr-FR": {
       "short": "fr",

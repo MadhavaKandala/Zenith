@@ -1,0 +1,12 @@
+{
+  "answer": {
+    "expressions": [
+      "Answer this question",
+      "Can you explain %question%",
+      "What is %question%",
+      "Who is %question%",
+      "Question: %question%"
+    ]
+  }
+}
+

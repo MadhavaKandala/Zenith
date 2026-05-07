@@ -1,0 +1,44 @@
+{
+  "create_reminder": {
+    "expressions": [
+      "Remind me to %reminder_text% at %time%",
+      "Set a reminder for %reminder_text%",
+      "Add a reminder: %reminder_text%",
+      "Don't let me forget to %reminder_text%",
+      "Remind me about %reminder_text% tomorrow"
+    ],
+    "entities": [
+      {
+        "type": "trim",
+        "name": "reminder_text",
+        "conditions": [
+          {
+            "type": "after",
+            "from": [
+              "to",
+              "about",
+              "for",
+              "forget to"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "list_reminders": {
+    "expressions": [
+      "What are my reminders",
+      "Show my reminders",
+      "List all reminders",
+      "What do I have to do"
+    ]
+  },
+  "delete_reminder": {
+    "expressions": [
+      "Delete reminder %id%",
+      "Remove reminder %id%",
+      "Cancel reminder %id%"
+    ]
+  }
+}
+

@@ -1,0 +1,12 @@
+{
+  "extract_text": {
+    "expressions": [
+      "Read text from this image",
+      "Run OCR on %query%",
+      "Extract text from %query%",
+      "Scan this image for text",
+      "What text is in %query%"
+    ]
+  }
+}
+

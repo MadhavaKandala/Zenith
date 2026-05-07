@@ -1,0 +1,6 @@
+{
+  "weather": {
+    "default_location": "auto:ip"
+  }
+}
+

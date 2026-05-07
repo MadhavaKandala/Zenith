@@ -1,0 +1,12 @@
+{
+  "translate": {
+    "expressions": [
+      "Define %query%",
+      "What does %query% mean",
+      "Dictionary lookup for %query%",
+      "Give me the meaning of %query%",
+      "Explain the word %query%"
+    ]
+  }
+}
+
