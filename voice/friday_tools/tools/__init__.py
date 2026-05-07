@@ -3,7 +3,7 @@ Tool registry — imports and registers all tool modules with the MCP server.
 Add new tool modules here as you build them.
 """
 
-from friday.tools import web, system, utils
+from friday_tools.tools import web, system, utils
 
 
 def register_all_tools(mcp):

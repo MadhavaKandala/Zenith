@@ -6,8 +6,7 @@
   "description": "Extract text from an image.",
   "author": {
     "name": "Zenith",
-    "email": "",
-    "url": ""
+    "email": "zenith@example.com",
+    "url": "https://github.com"
   }
 }
-

@@ -1,2 +1,48 @@
-{}
-
+{
+  "$schema": "../../../../schemas/skill-schemas/skill-config.json",
+  "actions": {
+    "create_reminder": {
+      "type": "logic",
+      "utterance_samples": [
+        "Remind me to call home at 8 PM",
+        "Set a reminder for the sprint demo",
+        "Add a reminder: submit the report",
+        "Don't let me forget to send the invoice"
+      ],
+      "answers": [
+        "Reminder set: %text%. I'll notify you at the right time, sir.",
+        "Done. I've scheduled a reminder for %text%."
+      ]
+    },
+    "list_reminders": {
+      "type": "logic",
+      "utterance_samples": [
+        "What are my reminders",
+        "Show my reminders",
+        "List all reminders",
+        "What do I have to do"
+      ],
+      "answers": [
+        "Here are your active reminders: %list%",
+        "You have %count% reminder(s): %list%"
+      ],
+      "unknown_answers": [
+        "You have no active reminders, sir.",
+        "Your schedule is clear."
+      ]
+    },
+    "delete_reminder": {
+      "type": "logic",
+      "utterance_samples": [
+        "Delete reminder 1",
+        "Remove reminder 2",
+        "Cancel reminder 3"
+      ],
+      "answers": [
+        "Reminder deleted.",
+        "Consider it gone."
+      ]
+    }
+  },
+  "answers": {}
+}

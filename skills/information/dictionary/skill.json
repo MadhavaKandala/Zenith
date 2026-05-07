@@ -6,8 +6,7 @@
   "description": "Look up word definitions.",
   "author": {
     "name": "Zenith",
-    "email": "",
-    "url": ""
+    "email": "zenith@example.com",
+    "url": "https://github.com"
   }
 }
-
