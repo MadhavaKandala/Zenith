@@ -8,8 +8,8 @@ running on the Windows host.
 MCP Server URL is auto-resolved from WSL → Windows host IP.
 
 Run:
-  uv run agent_friday.py dev      – LiveKit Cloud mode
-  uv run agent_friday.py console  – text-only console mode
+  uv run agent.py dev      – LiveKit Cloud mode
+  uv run agent.py console  – text-only console mode
 """
 
 import os

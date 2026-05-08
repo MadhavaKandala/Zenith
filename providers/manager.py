@@ -4,7 +4,7 @@ from .openrouter_provider import OpenRouterProvider
 
 
 class ZenithProviderManager:
-    """Multi-provider manager with automatic fallback. Ported from vierisid/jarvis."""
+    """Provider fallback manager."""
 
     def __init__(self, config: dict):
         self.providers = []
@@ -40,4 +40,3 @@ class ZenithProviderManager:
     @property
     def active_provider(self) -> str:
         return self.providers[self.current_provider_index].name
-

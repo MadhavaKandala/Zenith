@@ -6,7 +6,7 @@ Thanks a lot for your interest in contributing to Leon! :heart:
 
 **Before submitting your contribution**, please take a moment to review this document.
 
-Please note we have a [code of conduct](https://github.com/leon-ai/leon/blob/develop/.github/CODE_OF_CONDUCT.md), please follow it in all your interactions with the project.
+Please note we have a [code of conduct](https://github.com/MadhavaKandala/Zenith/blob/develop/.github/CODE_OF_CONDUCT.md), please follow it in all your interactions with the project.
 
 ## How You Can Help
 
@@ -14,23 +14,23 @@ Here are few examples about how you could help on Leon, by:
 
 - [Creating a new module](https://docs.getleon.ai/packages-modules).
 - [Working on new features](http://roadmap.getleon.ai) (what is in backlog or todo).
-- [Suggesting new ideas](https://github.com/leon-ai/leon/issues/new/choose).
-- [Reporting a bug](https://github.com/leon-ai/leon/issues/new?labels=bug&template=BUG.md).
-- [Improving the documentation](https://github.com/leon-ai/docs.getleon.ai) (translations, typos, better writing, etc.).
+- [Suggesting new ideas](https://github.com/MadhavaKandala/Zenith/issues/new/choose).
+- [Reporting a bug](https://github.com/MadhavaKandala/Zenith/issues/new?labels=bug&template=BUG.md).
+- [Improving the documentation](https://github.com/MadhavaKandala/Zenith/issues) (translations, typos, better writing, etc.).
 - [Sponsoring Leon](http://sponsor.getleon.ai).
 
 ## Pull Requests
 
 **Working on your first Pull Request?** You can learn how from this _free_ series [How to Contribute to an Open Source Project on GitHub](https://egghead.io/courses/how-to-contribute-to-an-open-source-project-on-github).
 
-- **Please first discuss** the change you wish to make via [issue](https://github.com/leon-ai/leon/issues),
+- **Please first discuss** the change you wish to make via [issue](https://github.com/MadhavaKandala/Zenith/issues),
   email, or any other method with the owners of this repository before making a change.
   It might avoid a waste of your time.
 
 - The `master` branch is actually used as a snapshot of the latest stable release. **Do not submit your PRs
   against the `master` branch**.
 
-- Ensure your code **respect our coding standards** (cf. [.eslintrc.json](https://github.com/leon-ai/leon/blob/develop/.eslintrc.json)).
+- Ensure your code **respect our coding standards** (cf. [.eslintrc.json](https://github.com/MadhavaKandala/Zenith/blob/develop/.eslintrc.json)).
   To do so, you can run:
 
   ```sh
@@ -53,13 +53,13 @@ Choose the setup method you want to go for.
 
 Gitpod will automatically set up an environment and run an instance for you.
 
-[![Open in Gitpod](https://gitpod.io/button/open-in-gitpod.svg)](https://gitpod.io/#https://github.com/leon-ai/leon)
+[![Open in Gitpod](https://gitpod.io/button/open-in-gitpod.svg)](https://gitpod.io/#https://github.com/MadhavaKandala/Zenith)
 
 ### Basic
 
 ```sh
 # Clone the repository
-git clone https://github.com/leon-ai/leon.git leon
+git clone https://github.com/MadhavaKandala/Zenith.git leon
 
 # Go to the project root
 cd leon
@@ -81,7 +81,7 @@ npm run dev:app
 
 ```sh
 # Clone the repository
-git clone https://github.com/leon-ai/leon.git leon
+git clone https://github.com/MadhavaKandala/Zenith.git leon
 
 # Go to the project root
 cd leon

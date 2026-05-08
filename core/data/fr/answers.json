@@ -25,10 +25,10 @@
       "Désolé, le skill \"%skill_name%\" du domaine \"%domain_name%\" est cassé"
     ],
     "random_unknown_intents": [
-      "Désolé, je ne connais pas encore ça, mais vous pouvez m'aider à comprendre en <a href=\"https://github.com/leon-ai/leon/blob/develop/.github/CONTRIBUTING.md\" target=\"_blank\">créant une pull request</a>",
-      "Désolé, vous devriez m'apprendre cette requête. Vous pouvez m'apprendre en <a href=\"https://github.com/leon-ai/leon/blob/develop/.github/CONTRIBUTING.md\" target=\"_blank\">créant une pull request</a>",
-      "Désolé, je ne peux pas répondre à ça. Laissez moi vous répondre à l'avenir en <a href=\"https://github.com/leon-ai/leon/blob/develop/.github/CONTRIBUTING.md\" target=\"_blank\">créant une pull request</a>",
-      "Désolé, vous devez m'éduquer un peu plus. Vous pouvez m'aider avec ça en <a href=\"https://github.com/leon-ai/leon/blob/develop/.github/CONTRIBUTING.md\" target=\"_blank\">contribuant à mon code</a>",
+      "Désolé, je ne connais pas encore ça, mais vous pouvez m'aider à comprendre en <a href=\"https://github.com/MadhavaKandala/Zenith/blob/develop/.github/CONTRIBUTING.md\" target=\"_blank\">créant une pull request</a>",
+      "Désolé, vous devriez m'apprendre cette requête. Vous pouvez m'apprendre en <a href=\"https://github.com/MadhavaKandala/Zenith/blob/develop/.github/CONTRIBUTING.md\" target=\"_blank\">créant une pull request</a>",
+      "Désolé, je ne peux pas répondre à ça. Laissez moi vous répondre à l'avenir en <a href=\"https://github.com/MadhavaKandala/Zenith/blob/develop/.github/CONTRIBUTING.md\" target=\"_blank\">créant une pull request</a>",
+      "Désolé, vous devez m'éduquer un peu plus. Vous pouvez m'aider avec ça en <a href=\"https://github.com/MadhavaKandala/Zenith/blob/develop/.github/CONTRIBUTING.md\" target=\"_blank\">contribuant à mon code</a>",
       "Désolé, je ne comprends pas votre requête",
       "Désolé, je suis encore très jeune, je n'ai pas compris votre demande"
     ],
@@ -44,8 +44,8 @@
       "Désolé, j'ai un trou de mémoire, je ne peux pas répondre à ça. J'ai compris ce que vous disiez, mais essayez voir d'une autre façon s'il vous plaît"
     ],
     "random_ner_type_not_supported": [
-      "Désolé, le type \"%entity_type%\" d'entité d'action n'est pas supporté par ma reconnaissance d'entité. Merci d'<a href=\"https://github.com/leon-ai/leon/issues\" target=\"_blank\">ouvrir une issue</a> afin de reporter ce cas, ce sera très apprécié",
-      "Désolé, ma reconnaissance d'entité ne reconnaît pas le type \"%entity_type%\" d'entité d'action. Merci d'<a href=\"https://github.com/leon-ai/leon/issues\" target=\"_blank\">ouvrir une issue</a> afin de reporter ce cas, ce serait très appréciable"
+      "Désolé, le type \"%entity_type%\" d'entité d'action n'est pas supporté par ma reconnaissance d'entité. Merci d'<a href=\"https://github.com/MadhavaKandala/Zenith/issues\" target=\"_blank\">ouvrir une issue</a> afin de reporter ce cas, ce sera très apprécié",
+      "Désolé, ma reconnaissance d'entité ne reconnaît pas le type \"%entity_type%\" d'entité d'action. Merci d'<a href=\"https://github.com/MadhavaKandala/Zenith/issues\" target=\"_blank\">ouvrir une issue</a> afin de reporter ce cas, ce serait très appréciable"
     ],
     "random_language_switch": [
       "Vous parlez une nouvelle langue, veuillez me donner une seconde le temps que je m'adapte",

@@ -7,7 +7,7 @@ email, or any other method with the owners of this repository before making a ch
 It might avoid a waste of your time.
 
 Before submitting your contribution, please take a moment to review this document:
-https://github.com/leon-ai/leon/blob/develop/.github/CONTRIBUTING.md
+https://github.com/MadhavaKandala/Zenith/blob/develop/.github/CONTRIBUTING.md
 
 Please place an x (no spaces - [x]) in all [ ] that apply.
 

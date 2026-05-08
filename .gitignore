@@ -36,3 +36,23 @@ core/data/models/*.nlp
 package.json.backup
 .python-version
 schemas/**/*.json
+
+# Documentation files
+*.docx
+ZENITH_INSTRUCTIONS.md
+ZENITH_DOCUMENTATION.docx
+ZENITH_FEATURES.docx
+
+# Build scripts
+build_docs*.js
+build_features.js
+
+# Source repo clones (should never be inside zenith/)
+friday-source/
+jarvis-source/
+gaurav-source/
+leon-source/
+
+# Agent work files
+*.agent_log
+.codex/

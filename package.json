@@ -1,20 +1,18 @@
 {
   "name": "zenith",
   "version": "1.0.0-beta.8",
-  "description": "Server, skills and web app of the Leon personal assistant",
+  "description": "ZENITH local-first personal AI assistant with voice, skills, and desktop runtime",
   "author": {
-    "name": "Louis Grenard",
-    "email": "louis@getleon.ai",
-    "url": "https://twitter.com/grenlouis"
+    "name": "Madhava Kandala"
   },
   "license": "MIT",
-  "homepage": "https://getleon.ai",
+  "homepage": "https://github.com/MadhavaKandala/Zenith",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/leon-ai/leon.git"
+    "url": "git+https://github.com/MadhavaKandala/Zenith.git"
   },
   "bugs": {
-    "url": "https://github.com/leon-ai/leon/issues"
+    "url": "https://github.com/MadhavaKandala/Zenith/issues"
   },
   "engines": {
     "node": ">=16.0.0",
@@ -64,10 +62,10 @@
     "pre-release:python-bridge": "ts-node scripts/release/pre-release-binaries.js python-bridge",
     "pre-release:tcp-server": "ts-node scripts/release/pre-release-binaries.js tcp-server",
     "check": "ts-node scripts/check.js",
-    "docker:build": "docker build -t leon-ai/leon .",
+    "docker:build": "docker build -t MadhavaKandala/Zenith .",
     "docker:run": "docker compose up",
     "docker:dev": "docker compose --file=docker-compose.dev.yml up",
-    "docker:check": "docker run --rm --interactive leon-ai/leon npm run check",
+    "docker:check": "docker run --rm --interactive MadhavaKandala/Zenith npm run check",
     "tauri": "tauri",
     "tauri:dev": "tauri dev",
     "tauri:build": "tauri build"

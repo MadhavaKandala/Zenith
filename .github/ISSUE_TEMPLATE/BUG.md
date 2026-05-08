@@ -7,7 +7,7 @@ labels: bug
 <!--
 Thanks for your interest in Leon! ❤️
 Please check if there is no similar issue before creating this one.
-If the bug is related to the setup, please submit the issue at: https://github.com/leon-ai/leon-cli/issues/new/choose
+If the bug is related to the setup, please submit the issue at: https://github.com/MadhavaKandala/Zenith-cli/issues/new/choose
 -->
 
 ### Specs

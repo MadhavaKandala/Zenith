@@ -3,7 +3,7 @@ services:
     container_name: 'leon'
     build:
       context: './'
-    image: 'leon-ai/leon'
+    image: 'MadhavaKandala/Zenith'
     environment:
       LEON_PORT: ${LEON_PORT:-1337}
       LEON_PY_TCP_SERVER_HOST: ${LEON_PY_TCP_SERVER_HOST:-0.0.0.0}

@@ -12,7 +12,7 @@ const PRODUCTION_ENV = 'production'
 const DEVELOPMENT_ENV = 'development'
 const TESTING_ENV = 'testing'
 
-export const GITHUB_URL = 'https://github.com/leon-ai/leon'
+export const GITHUB_URL = 'https://github.com/MadhavaKandala/Zenith'
 
 /**
  * Binaries / distribution
