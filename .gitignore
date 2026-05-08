@@ -30,6 +30,7 @@ tcp_server/src/Pipfile.lock
 !**/*.sample*
 packages/**/config/config.json
 skills/**/src/config.json
+skills/**/config/config.json
 packages/**/data/db/*.json
 skills/**/memory/*.json
 core/data/models/*.nlp
