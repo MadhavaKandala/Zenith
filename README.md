@@ -1,267 +1,397 @@
-<p align="center">
-  <a href="https://getleon.ai"><img width="800" src="https://getleon.ai/img/hero-animation.gif" /></a>
+# ZENITH - Personal AI Assistant
+
+<p align="left">
+  <a href="https://github.com/MadhavaKandala/Zenith/stargazers"><img src="https://img.shields.io/github/stars/MadhavaKandala/Zenith?style=for-the-badge" alt="Stars"></a>
+  <a href="https://github.com/MadhavaKandala/Zenith/network/members"><img src="https://img.shields.io/github/forks/MadhavaKandala/Zenith?style=for-the-badge" alt="Forks"></a>
+  <a href="https://github.com/MadhavaKandala/Zenith/issues"><img src="https://img.shields.io/github/issues/MadhavaKandala/Zenith?style=for-the-badge" alt="Issues"></a>
+  <a href="https://github.com/MadhavaKandala/Zenith/blob/main/LICENSE.md"><img src="https://img.shields.io/github/license/MadhavaKandala/Zenith?style=for-the-badge" alt="License"></a>
+  <img src="https://img.shields.io/badge/Stack-Node.js%20%7C%20Python%20%7C%20Tauri%20%7C%20LiveKit-111827?style=for-the-badge" alt="Tech Stack">
 </p>
 
-<h1 align="center">
-  <a href="https://getleon.ai"><img width="96" src="https://getleon.ai/img/logo.svg" alt="Leon"></a><br>
-  Leon
-</h1>
+**Futuristic, local-first AI command center for voice-native productivity.**
 
-_<p align="center">Your open-source personal assistant.</p>_
-
-<p align="center">
-  <a href="https://github.com/leon-ai/leon/blob/develop/LICENSE.md"><img src="https://img.shields.io/badge/license-MIT-blue.svg?label=License&style=flat" /></a>
-  <a href="https://github.com/leon-ai/leon/blob/develop/.github/CONTRIBUTING.md"><img src="https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat" /></a>
-  <br>
-  <a href="https://github.com/leon-ai/leon/actions/workflows/build.yml"><img src="https://github.com/leon-ai/leon/actions/workflows/build.yml/badge.svg?branch=develop" /></a>
-  <a href="https://github.com/leon-ai/leon/actions/workflows/tests.yml"><img src="https://github.com/leon-ai/leon/actions/workflows/tests.yml/badge.svg?branch=develop" /></a>
-  <a href="https://github.com/leon-ai/leon/actions/workflows/lint.yml"><img src="https://github.com/leon-ai/leon/actions/workflows/lint.yml/badge.svg?branch=develop" /></a>
-  <br>
-  <a href="https://discord.gg/MNQqqKg"><img src="https://svgshare.com/i/V09.svg"/></a>
-</p>
-
-<p align="center">
-  <a href="https://getleon.ai">Website</a> ::
-  <a href="https://docs.getleon.ai">Documentation</a> ::
-  <a href="http://roadmap.getleon.ai">Roadmap</a> ::
-  <a href="https://github.com/leon-ai/leon/blob/develop/.github/CONTRIBUTING.md">Contributing</a> ::
-  <a href="https://blog.getleon.ai/the-story-behind-leon/">Story</a>
-</p>
+ZENITH is a personal AI assistant designed to run on your machine, route intelligence across multiple model providers, execute real tools through an MCP server, and respond through a Stark-inspired HUD and desktop shell.
 
 ---
 
-## Current State
+## Showcase
 
-### Why is there a small amount of contributors?
+ZENITH exists for builders and operators who want a private, extensible AI system that feels like a real product, not a toy bot.
 
-I'm taking a lot of time to work on the new core of Leon due to personal reasons. I can only work on it after work and on weekends. Hence, **I'm blocking any potential contribution as the whole core of Leon is coming with many breaking changes**. Many of you are willing to contribute in Leon (create new skills, help to improve the core, translations and so on...), a big thanks to every one of you!
+- Local-first runtime keeps your workflow anchored to your own environment.
+- Voice-native pipeline delivers natural interaction from microphone to response.
+- Modular skills architecture lets you expand capabilities without touching the core.
+- Multi-provider routing keeps the assistant responsive when one API is degraded.
 
-I wish one day I could work on Leon full time, but it's not possible at the moment as I need to pay my bills. I have some ideas about how to monetize Leon in the future (Leon's core will always remain open source), but before to get there there is still a long way to go.
+### Why local-first AI matters
 
-Until then, any financial support by [sponsoring Leon](http://sponsor.getleon.ai) is much appreciated 🙂
+Most assistants are cloud UIs with fixed behavior. ZENITH is an execution layer you control:
 
-### How about large language models and Leon?
-
-Since AI gained in popularity and large language models are getting more and more traction, many of you joined our community. A huge welcome to all of you! 🤗
-
-At the moment, Leon's NLU will remain intents first with his own model without relying on an LLM. It is important that Leon can run 100% offline and I'm confident that with the downsizing techniques such as quantization Leon will sooner or later work with LLMs at his core and still be able to run on edge.
-
-Here is how LLMs may help Leon in the future:
-
-- Intent fallback: when an utterance cannot match an intent, then rely on an LLM to provide results.
-- New named entity recognition engine: provide a better solution to extract entities from utterances such as fruits, numbers, cities, durations, persons, etc.
-- Skill features: let skills leverage LLMs to provide out-of-the-box NLP features such as summarization, translation, sentiment analysis and so on...
-- Skill building: LLMs can help to develop skills such as paraphrasing utterance samples, translate answers, convert code from our Python bridge to the upcoming JavaScript bridge and vice versa, etc.
-- More...
-
-### What's Next?
-
-Once the new core released, we'll work on the community aspect of Leon. For example, better organize [our Discord](https://discord.gg/MNQqqKg), planify regular calls, work on skills together, etc. It is very important for Leon to have a real community. At that moment, the skills platform will already be online, so it'll be easier to sync our progress and publish new skills.
-
-- Feel free to check out the Git development branches and our [next major milestones](https://blog.getleon.ai/a-much-better-nlp-and-future-1-0-0-beta-7/#whats-next).
-- And the [detailed roadmap](http://roadmap.getleon.ai).
-- Many exciting things are coming up, hence no new documentation and test are going to be written until the official release of Leon.
+- Your runtime and orchestration stay on your machine.
+- Your skills are plain code and data, not hidden behind closed platforms.
+- You choose providers, models, and fallback priority.
+- You can deploy as web dashboard and desktop app from one codebase.
 
 ---
 
-## Latest Release
+## Why Zenith?
 
-Check out the [latest release blog post](https://blog.getleon.ai/binaries-and-typescript-rewrite-1-0-0-beta-8/).
-
-<a href="https://blog.getleon.ai/binaries-and-typescript-rewrite-1-0-0-beta-8/"><img width="400" src="https://blog.getleon.ai/static/a0d1cbafd1968e7531dc17e229f8cc61/aa440/beta-8.png" /></a>
+| Capability | Zenith | Typical Assistant |
+|---|---|---|
+| Local-first architecture | Yes | Rare |
+| Extensible skills | Yes, modular domains | Usually closed |
+| Provider fallback chain | Gemini -> Groq -> OpenRouter | Usually single provider |
+| Voice-native pipeline | LiveKit + STT + TTS | Often chat-only |
+| Customizable stack | Models, skills, UI, desktop shell | Limited |
+| Open source control | Full repository ownership | Vendor-dependent |
 
 ---
 
-## 👋 Introduction
+## Features
 
-**Leon** is an **open-source personal assistant** who can live **on your server**.
+### Core Platform
 
-He **does stuff** when you **ask him to**.
+| Area | What you get |
+|---|---|
+| Voice AI | Real-time voice interaction over LiveKit |
+| HUD Dashboard | Three-panel Stark-inspired interface with state orb and tool monitor |
+| AI Fallback | Automatic provider failover for resilient responses |
+| Desktop Runtime | Tauri desktop packaging for native Windows app delivery |
+| Skill Engine | Python-based modular skill domains with persistent behavior |
+| MCP Tools | External tool execution through FastMCP server |
+| Privacy Model | Local-first orchestration and self-managed configuration |
 
-You can **talk to him** and he can **talk to you**.
-You can also **text him** and he can also **text you**.
-If you want to, Leon can communicate with you by being **offline to protect your privacy**.
+### Implemented Skills
 
-### Why?
+| Domain | Skill | Purpose |
+|---|---|---|
+| Productivity | Reminders | Create, list, and manage personal reminders |
+| Information | News | Fetch and summarize top headlines |
+| Automation | Chrome / Browser | Open websites and run web searches |
+| Knowledge | Q&A | General factual responses via configured LLM |
+| Information | Wikipedia | Retrieve concise summaries |
+| Information | Weather | Current conditions using weather APIs |
+| Information | Dictionary | Definitions with spelling tolerance |
+| Entertainment | YouTube | Search and open YouTube queries |
+| Productivity | OCR | Extract text from image files |
+| Utilities | To-do management | Task-oriented productivity interactions |
+| Utilities | GitHub trending | Developer trend discovery |
+| Utilities | Video downloader | Media fetch workflows |
 
-> 1. If you are a developer (or not), you may want to build many things that could help in your daily life.
->    Instead of building a dedicated project for each of those ideas, Leon can help you with his
->    Skills structure.
-> 2. With this generic structure, everyone can create their own skills and share them with others.
->    Therefore there is only one core (to rule them all).
-> 3. Leon uses AI concepts, which is cool.
-> 4. Privacy matters, you can configure Leon to talk with him offline. You can already text with him without any third party services.
-> 5. Open source is great.
+---
 
-### What is this repository for?
+## System Architecture
 
-> This repository contains the following nodes of Leon:
->
-> - The server
-> - Skills
-> - The web app
-> - The hotword node
-> - The TCP server (for inter-process communication between Leon and third-party nodes such as spaCy)
-> - The Python bridge (the connector between the core and skills made with Python)
-
-### What is Leon able to do?
-
-> Today, the most interesting part is about his core and the way he can scale up. He is pretty young but can easily scale to have new features (skills).
-> You can find what he is able to do by browsing the [skills list](https://github.com/leon-ai/leon/tree/develop/skills).<br>
-> Please do know that after the official release, we will build many skills along with the community. Feel free to [join us on Discord](https://discord.gg/MNQqqKg) to be part of the journey.
-
-Sounds good to you? Then let's get started!
-
-## ☁️ Try with a Single-Click
-
-Gitpod will automatically set up an environment and run an instance for you.
-
-[![Open in Gitpod](https://gitpod.io/button/open-in-gitpod.svg)](https://gitpod.io/#https://github.com/leon-ai/leon)
-
-## 🚀 Getting Started
-
-### Prerequisites
-
-- [Node.js](https://nodejs.org/) >= 16
-- [npm](https://npmjs.com/) >= 8
-- Supported OSes: Linux, macOS and Windows
-
-To install these prerequisites, you can follow the [How To section](https://docs.getleon.ai/how-to/) of the documentation.
-
-### Installation
-
-```sh
-# Install the Leon CLI
-npm install --global @leon-ai/cli
-
-# Install Leon (stable branch)
-leon create birth
-# OR install from the develop branch: leon create birth --develop
+```text
+                          +-----------------------+
+                          |   Zenith HUD / Tauri  |
+                          |  (Web + Desktop UI)   |
+                          +-----------+-----------+
+                                      |
+                                      v
+                        +-----------------------------+
+                        |   Core Orchestrator Layer   |
+                        |  (Node.js + skill routing)  |
+                        +-----+-------------------+---+
+                              |                   |
+                              |                   v
+                              |        +----------------------+
+                              |        |  Python MCP Server   |
+                              |        |  (FastMCP tools)     |
+                              |        +----------+-----------+
+                              |                   |
+                              v                   v
+                      +---------------+   +--------------------+
+                      | Skill Engine  |   | External Actions   |
+                      | (Python mods) |   | Browser, OCR, APIs |
+                      +-------+-------+   +--------------------+
+                              |
+                              v
+                        +-----------------------------+
+                        |   LLM Provider Manager      |
+                        | Gemini -> Groq -> OpenRouter|
+                        +-----------------------------+
 ```
 
-### Usage
+### Voice Pipeline (STT -> LLM -> Tool -> TTS)
 
-```sh
-# Check the setup went well
-leon check
-
-# Run
-leon start
-
-# Go to http://localhost:1337
-# Hooray! Leon is running
+```text
+Mic Input
+   |
+   v
+LiveKit Transport
+   |
+   v
+Groq Whisper STT
+   |
+   v
+LLM Reasoning (Gemini primary, Groq/OpenRouter fallback)
+   |
+   +--> Optional MCP Tool Call (news, browser, weather, OCR, etc.)
+   |
+   v
+Google Cloud TTS
+   |
+   v
+Speaker Output
 ```
 
-### Docker Installation
+### Provider Fallback Chain
 
-```sh
-# Install Leon
-leon create birth --docker
-
-# Run
-leon start
-
-# Go to http://localhost:1337
-# Hooray! Leon is running
+```text
+[Try 1] Gemini (gemini-2.5-flash)
+   |
+   | if error / timeout / rate limit
+   v
+[Try 2] Groq (llama-3.3-70b-versatile)
+   |
+   | if unavailable
+   v
+[Try 3] OpenRouter (meta-llama/llama-3.3-70b-instruct)
 ```
 
-## 📚 Documentation
+---
 
-For full documentation, visit [docs.getleon.ai](https://docs.getleon.ai).
+## Screenshots
 
-## 📺 Video
+![Zenith Dashboard](assets/dashboard.png)
+![Zenith Voice Console](assets/voice-console.png)
+![Zenith Tool Monitor](assets/tool-monitor.png)
 
-[Watch a demo](https://www.youtube.com/watch?v=p7GRGiicO1c).
+---
 
-## 🧭 Roadmap
+## Technology Stack
 
-To know what is going on, follow [roadmap.getleon.ai](http://roadmap.getleon.ai).
+| Layer | Technologies |
+|---|---|
+| LLM | Google Gemini 2.5 Flash, Groq Llama 3.3, OpenRouter |
+| STT/TTS | Groq Whisper STT, Google Cloud TTS |
+| Voice Transport | LiveKit |
+| Tool Server | FastMCP |
+| Backend | Node.js, Python |
+| Frontend | JavaScript, Vite |
+| Desktop | Tauri (Rust backend) |
+| Skills | Modular Python skill architecture |
 
-## ❤️ Contributing
+---
 
-If you have an idea for improving Leon, do not hesitate.
+## Installation
 
-**Leon needs open source to live**, the more skills he has, the more skillful he becomes.
+### 1) Requirements
 
-## 📖 The Story Behind Leon
+- Node.js `>=22`
+- npm `>=10`
+- Python `>=3.11`
+- `uv`
+- Rust + Cargo
+- Visual Studio 2022 C++ Build Tools (Windows, for Tauri build)
 
-You'll find a write-up on this [blog post](https://blog.getleon.ai/the-story-behind-leon/).
+### 2) Clone
 
-## 🔔 Stay Tuned
+```bash
+git clone https://github.com/MadhavaKandala/Zenith.git
+cd Zenith
+```
 
-- [Twitter](https://twitter.com/grenlouis)
-- [Newsletter](https://newsletter.getleon.ai/subscription/form)
-- [Blog](https://blog.getleon.ai)
-- [GitHub issues](https://github.com/leon-ai/leon/issues)
-- [YouTube](https://www.youtube.com/channel/UCW6mk6j6nQUzFYY97r47emQ)
-- [#LeonAI](<https://twitter.com/search?f=live&q=%23LeonAI%20(from%3Agrenlouis%20OR%20from%3Alouistiti_fr)&src=typed_query>)
+### 3) Environment Setup
 
-## 👨 Author
+```bash
+copy .env.sample .env
+```
 
-**Louis Grenard** ([@grenlouis](https://twitter.com/grenlouis))
+Set these keys in `.env`:
 
-## 👍 Sponsors
+- `GOOGLE_API_KEY` for Gemini
+- `GROQ_API_KEY` for Groq LLM and Whisper STT
+- `OPENROUTER_API_KEY` for fallback routing
+- `LIVEKIT_URL`, `LIVEKIT_API_KEY`, `LIVEKIT_API_SECRET` for voice transport
+- `GOOGLE_APPLICATION_CREDENTIALS` path to Google Cloud service-account JSON (TTS)
 
-<table>
-  <tbody>
-    <tr>
-      <td align="center" valign="middle" width="128">
-        <a href="https://github.com/Appwrite">
-          <img src="https://github.com/Appwrite.png?size=128" />
-          Appwrite
-        </a><br>
-        <sub><sup>250 USD / month</sup></sub>
-      </td>
-      <td align="center" valign="middle" width="128">
-        <img src="https://getleon.ai/img/anonymous.svg" width="128" />
-        Anonymous
-        <br>
-        <sub><sup>100 USD / month</sup></sub>
-      </td>
-      <td align="center" valign="middle" width="128">
-        <a href="https://github.com/herbundkraut">
-          <img src="https://github.com/herbundkraut.png?size=128" />
-          herbundkraut
-        </a><br>
-        <sub><sup>10 USD / month</sup></sub>
-      </td>
-      <td align="center" valign="middle" width="128">
-      	<a href="http://sponsor.getleon.ai/">
-          You?
-        </a>
-      </td>
-    </tr>
-  </tbody>
-</table>
+### 4) Install Node Dependencies
 
-You can also contribute by [sponsoring Leon](http://sponsor.getleon.ai).
+```bash
+npm install
+```
 
-Please note that I dedicate most of my free time to Leon.
+### 5) Install Voice Environment
 
-By sponsoring the project you make the project sustainable and faster to develop features.
+```bash
+cd voice
+uv sync
+cd ..
+```
 
-The focus is not only limited to the activity you see on GitHub but also a lot of thinking about the direction of the project. Which is naturally related to the overall design, architecture, vision, learning process and so on...
+### 6) Install Python Skill/Bridge Dependencies
 
-### Special Thanks
+```bash
+cd bridges/python
+pip install wikipedia requests newsapi-python pyowm pytesseract playwright tinydb --break-system-packages
+python -m playwright install chromium
+cd ../..
+```
 
-<a href="https://vercel.com/?utm_source=leon-ai&utm_campaign=oss">
-  <img src="https://i.imgur.com/S5olXWh.png" alt="Vercel" width="128" />
-</a>
-&nbsp; &nbsp; &nbsp;
-<a href="https://www.macstadium.com/">
-  <img src="https://getleon.ai/img/thanks/mac-stadium.svg" alt="MacStadium" width="128" />
-</a>
-&nbsp; &nbsp; &nbsp;
-<a href="https://www.aoz.studio">
-  <img src="https://getleon.ai/_next/image?url=%2Fimg%2Fthanks%2Faoz-studio.png&w=384&q=75" alt="AOZ Studio" width="128" />
-</a>
+### 7) Verify Core Health
 
-## 📝 License
+```bash
+npm run check
+```
 
-[MIT License](https://github.com/leon-ai/leon/blob/develop/LICENSE.md)
+---
 
-Copyright (c) 2019-present, Louis Grenard <louis@getleon.ai>
+## Running Zenith
 
-## Cheers!
+ZENITH runs as three coordinated services for full voice + tool functionality.
 
-![Cheers!](https://github.githubassets.com/images/icons/emoji/unicode/1f379.png 'Cheers!')
+### Method A: Three terminals
+
+Terminal 1 (core):
+```bash
+npm start
+```
+
+Terminal 2 (MCP tool server):
+```bash
+cd voice
+uv run python mcp_server.py
+```
+
+Terminal 3 (voice agent):
+```bash
+cd voice
+uv run python agent.py dev
+```
+
+Then open:
+
+- Dashboard: `http://localhost:1337`
+- LiveKit playground: `https://agents-playground.livekit.io`
+
+### Method B: PM2 process manager
+
+```bash
+npm install -g pm2
+pm2 start npm --name zenith-core -- start
+pm2 start "uv run python mcp_server.py" --name zenith-mcp --cwd voice
+pm2 start "uv run python agent.py dev" --name zenith-voice --cwd voice
+pm2 save
+pm2 logs
+```
+
+### Method C: Desktop app
+
+```bash
+npm run tauri:dev
+```
+
+Production desktop build:
+
+```bash
+npm run tauri:build
+```
+
+---
+
+## Skills Reference
+
+### Custom Skills (Current)
+
+- `reminders`: persistent reminders and follow-ups
+- `news`: global headlines
+- `chrome`: browser opening and search automation
+- `qa`: open-domain question handling
+- `wiki`: Wikipedia summaries
+- `weather`: weather conditions lookup
+- `dictionary`: meaning + correction support
+- `youtube`: query-based video search
+- `ocr`: text extraction from images
+
+### Built-in Skill Support
+
+ZENITH also includes built-in assistant capabilities provided by the core runtime, with routing through `core/langs.json` fallback entries.
+
+### Add a New Skill
+
+Create a new module with:
+
+- `skill.py` logic file
+- `data/expressions/en.json` trigger phrases
+- `data/answers/en.json` responses
+- `skill.json` metadata
+- `config/en.json` and `config/config.sample.json`
+
+Then register fallback words in `core/langs.json` and restart core.
+
+---
+
+## Folder Structure
+
+```text
+Zenith/
+|- app/                    # HUD frontend (Vite + vanilla JS)
+|- config/                 # provider and runtime config
+|  |- zenith.yaml
+|  |- zenith.example.yaml
+|- core/                   # assistant core and language routing
+|- providers/              # Gemini/Groq/OpenRouter abstraction
+|- skills/                 # custom and built-in skills
+|  |- productivity/
+|  |- information/
+|  |- automation/
+|  |- knowledge/
+|  |- entertainment/
+|- voice/                  # voice agent + MCP server
+|  |- agent.py
+|  |- mcp_server.py
+|- bridges/python/         # python bridge dependencies
+|- src-tauri/              # desktop packaging and Rust runtime
+`- README.md
+```
+
+---
+
+## Roadmap
+
+- Multilingual voice and skill support
+- Face authentication and identity profiles
+- Custom wake-word engine
+- Long-term memory with contextual recall
+- Mobile companion application
+- Autonomous skill generation pipeline
+
+---
+
+## Future Vision
+
+ZENITH is positioned as a personal AI operating layer rather than a single chatbot. The next evolution is a persistent local intelligence fabric: voice-native interaction, autonomous task execution, dynamic skill synthesis, and cross-device presence with strict owner control over data, providers, and behavior.
+
+---
+
+## Contributing
+
+Contributions are welcome for:
+
+- new skills and tool integrations
+- performance and reliability improvements
+- voice UX quality upgrades
+- dashboard and desktop polish
+
+Workflow:
+
+1. Fork the repo
+2. Create a feature branch
+3. Commit focused changes
+4. Open a pull request with test notes
+
+---
+
+## License
+
+This project is licensed under the MIT License. See `LICENSE.md`.
+
+---
+
+## Creator
+
+Created and maintained by **Madhava Kandala**.
+
+GitHub: [https://github.com/MadhavaKandala](https://github.com/MadhavaKandala)
