@@ -1,219 +1,136 @@
-# ZENITH - Personal AI Assistant
+<div align="center">
 
-<p align="left">
-  <a href="https://github.com/MadhavaKandala/Zenith/stargazers"><img src="https://img.shields.io/github/stars/MadhavaKandala/Zenith?style=for-the-badge" alt="Stars"></a>
-  <a href="https://github.com/MadhavaKandala/Zenith/network/members"><img src="https://img.shields.io/github/forks/MadhavaKandala/Zenith?style=for-the-badge" alt="Forks"></a>
-  <a href="https://github.com/MadhavaKandala/Zenith/issues"><img src="https://img.shields.io/github/issues/MadhavaKandala/Zenith?style=for-the-badge" alt="Issues"></a>
-  <a href="https://github.com/MadhavaKandala/Zenith/blob/main/LICENSE.md"><img src="https://img.shields.io/github/license/MadhavaKandala/Zenith?style=for-the-badge" alt="License"></a>
-  <img src="https://img.shields.io/badge/Stack-Node.js%20%7C%20Python%20%7C%20Tauri%20%7C%20LiveKit-111827?style=for-the-badge" alt="Tech Stack">
-</p>
+# ⚡ ZENITH
 
-**Futuristic, local-first AI command center for voice-native productivity.**
+### Your Personal AI Assistant
 
-ZENITH is a personal AI assistant designed to run on your machine, route intelligence across multiple model providers, execute real tools through an MCP server, and respond through a Stark-inspired HUD and desktop shell.
+*Voice-powered. Locally hosted. Fully yours.*
 
----
+![Node](https://img.shields.io/badge/Node.js-22%2B-339933?style=flat-square&logo=node.js&logoColor=white)
+![Python](https://img.shields.io/badge/Python-3.11%2B-3776AB?style=flat-square&logo=python&logoColor=white)
+![Gemini](https://img.shields.io/badge/AI-Gemini%202.5%20Flash-4285F4?style=flat-square&logo=google&logoColor=white)
+![Tauri](https://img.shields.io/badge/Desktop-Tauri-FFC131?style=flat-square&logo=tauri&logoColor=black)
+![License](https://img.shields.io/badge/License-MIT-00D4FF?style=flat-square)
 
-## Showcase
-
-ZENITH exists for builders and operators who want a private, extensible AI system that feels like a real product, not a toy bot.
-
-- Local-first runtime keeps your workflow anchored to your own environment.
-- Voice-native pipeline delivers natural interaction from microphone to response.
-- Modular skills architecture lets you expand capabilities without touching the core.
-- Multi-provider routing keeps the assistant responsive when one API is degraded.
-
-### Why local-first AI matters
-
-Most assistants are cloud UIs with fixed behavior. ZENITH is an execution layer you control:
-
-- Your runtime and orchestration stay on your machine.
-- Your skills are plain code and data, not hidden behind closed platforms.
-- You choose providers, models, and fallback priority.
-- You can deploy as web dashboard and desktop app from one codebase.
+</div>
 
 ---
 
-## Why Zenith?
+Zenith is a personal AI assistant that runs on your own machine. Speak to it naturally — it listens, thinks, executes real tools, and responds back in a synthesized voice through a futuristic Tony Stark-inspired HUD dashboard.
 
-| Capability | Zenith | Typical Assistant |
-|---|---|---|
-| Local-first architecture | Yes | Rare |
-| Extensible skills | Yes, modular domains | Usually closed |
-| Provider fallback chain | Gemini -> Groq -> OpenRouter | Usually single provider |
-| Voice-native pipeline | LiveKit + STT + TTS | Often chat-only |
-| Customizable stack | Models, skills, UI, desktop shell | Limited |
-| Open source control | Full repository ownership | Vendor-dependent |
+No subscriptions. No data leaving your machine without your control. Your API keys, your models, your assistant.
 
 ---
 
 ## Features
 
-### Core Platform
-
-| Area | What you get |
-|---|---|
-| Voice AI | Real-time voice interaction over LiveKit |
-| HUD Dashboard | Three-panel Stark-inspired interface with state orb and tool monitor |
-| AI Fallback | Automatic provider failover for resilient responses |
-| Desktop Runtime | Tauri desktop packaging for native Windows app delivery |
-| Skill Engine | Python-based modular skill domains with persistent behavior |
-| MCP Tools | External tool execution through FastMCP server |
-| Privacy Model | Local-first orchestration and self-managed configuration |
-
-### Implemented Skills
-
-| Domain | Skill | Purpose |
-|---|---|---|
-| Productivity | Reminders | Create, list, and manage personal reminders |
-| Information | News | Fetch and summarize top headlines |
-| Automation | Chrome / Browser | Open websites and run web searches |
-| Knowledge | Q&A | General factual responses via configured LLM |
-| Information | Wikipedia | Retrieve concise summaries |
-| Information | Weather | Current conditions using weather APIs |
-| Information | Dictionary | Definitions with spelling tolerance |
-| Entertainment | YouTube | Search and open YouTube queries |
-| Productivity | OCR | Extract text from image files |
-| Utilities | To-do management | Task-oriented productivity interactions |
-| Utilities | GitHub trending | Developer trend discovery |
-| Utilities | Video downloader | Media fetch workflows |
+- **Voice interaction** — speak naturally, Zenith listens and responds with a voice
+- **9 skill domains** — reminders, news, Q&A, web browsing, Wikipedia, weather, dictionary, YouTube, OCR
+- **Smart AI fallback** — Gemini as the primary brain, automatically switches to Groq or OpenRouter if needed
+- **Futuristic HUD** — three-panel dark dashboard with animated voice orb and live tool monitor
+- **Native desktop app** — runs as a proper Windows application via Tauri
+- **Fully extensible** — add new skills by dropping in a folder, no core changes needed
+- **Local-first** — runs on your hardware, your API keys, your data
 
 ---
 
-## System Architecture
+## Tech Stack
 
-```text
-                          +-----------------------+
-                          |   Zenith HUD / Tauri  |
-                          |  (Web + Desktop UI)   |
-                          +-----------+-----------+
-                                      |
-                                      v
-                        +-----------------------------+
-                        |   Core Orchestrator Layer   |
-                        |  (Node.js + skill routing)  |
-                        +-----+-------------------+---+
-                              |                   |
-                              |                   v
-                              |        +----------------------+
-                              |        |  Python MCP Server   |
-                              |        |  (FastMCP tools)     |
-                              |        +----------+-----------+
-                              |                   |
-                              v                   v
-                      +---------------+   +--------------------+
-                      | Skill Engine  |   | External Actions   |
-                      | (Python mods) |   | Browser, OCR, APIs |
-                      +-------+-------+   +--------------------+
-                              |
-                              v
-                        +-----------------------------+
-                        |   LLM Provider Manager      |
-                        | Gemini -> Groq -> OpenRouter|
-                        +-----------------------------+
-```
-
-### Voice Pipeline (STT -> LLM -> Tool -> TTS)
-
-```text
-Mic Input
-   |
-   v
-LiveKit Transport
-   |
-   v
-Groq Whisper STT
-   |
-   v
-LLM Reasoning (Gemini primary, Groq/OpenRouter fallback)
-   |
-   +--> Optional MCP Tool Call (news, browser, weather, OCR, etc.)
-   |
-   v
-Google Cloud TTS
-   |
-   v
-Speaker Output
-```
-
-### Provider Fallback Chain
-
-```text
-[Try 1] Gemini (gemini-2.5-flash)
-   |
-   | if error / timeout / rate limit
-   v
-[Try 2] Groq (llama-3.3-70b-versatile)
-   |
-   | if unavailable
-   v
-[Try 3] OpenRouter (meta-llama/llama-3.3-70b-instruct)
-```
+| Layer | Technology |
+|-------|-----------|
+| AI Brain (primary) | Google Gemini 2.5 Flash |
+| AI Brain (fallback) | Groq llama-3.3-70b → OpenRouter |
+| Voice Input (STT) | Groq Whisper large-v3-turbo |
+| Voice Output (TTS) | Google Cloud TTS — Neural2-D |
+| Voice Transport | LiveKit Agents |
+| Skills Engine | NLU classifier + Python skill bridge |
+| Web UI | Vanilla JS + Vite — dark HUD theme |
+| Desktop App | Tauri (native Windows) |
+| Tool Server | FastMCP over SSE |
 
 ---
 
-## Screenshots
+## Prerequisites
 
-![Zenith Dashboard](assets/dashboard.png)
-![Zenith Voice Console](assets/voice-console.png)
-![Zenith Tool Monitor](assets/tool-monitor.png)
+### Software
 
----
+| Software | Version | Check |
+|----------|---------|-------|
+| Node.js | ≥ 22.x | `node --version` |
+| npm | ≥ 10.x | `npm --version` |
+| Python | ≥ 3.11 | `python --version` |
+| uv | any | `uv --version` |
+| Git | any | `git --version` |
+| Rust + Cargo | any | `rustc --version` |
 
-## Technology Stack
+> **Windows only:** Tauri requires Visual Studio C++ Build Tools.
+> Install with: `winget install Microsoft.VisualStudio.2022.BuildTools`
 
-| Layer | Technologies |
-|---|---|
-| LLM | Google Gemini 2.5 Flash, Groq Llama 3.3, OpenRouter |
-| STT/TTS | Groq Whisper STT, Google Cloud TTS |
-| Voice Transport | LiveKit |
-| Tool Server | FastMCP |
-| Backend | Node.js, Python |
-| Frontend | JavaScript, Vite |
-| Desktop | Tauri (Rust backend) |
-| Skills | Modular Python skill architecture |
+### API Keys
+
+You need free accounts for these services. None require a credit card.
+
+| Key | Powers | Get it | Free tier |
+|-----|--------|--------|-----------|
+| `GOOGLE_API_KEY` | Gemini AI (primary brain) | [aistudio.google.com](https://aistudio.google.com) | 1M tokens/day |
+| `GROQ_API_KEY` | Whisper STT + Llama fallback | [console.groq.com](https://console.groq.com) | 14,400 req/day |
+| `LIVEKIT_URL` | Voice transport | [cloud.livekit.io](https://cloud.livekit.io) | 3 concurrent rooms |
+| `LIVEKIT_API_KEY` | LiveKit auth | [cloud.livekit.io](https://cloud.livekit.io) | Free |
+| `LIVEKIT_API_SECRET` | LiveKit auth | [cloud.livekit.io](https://cloud.livekit.io) | Free |
+| `GOOGLE_APPLICATION_CREDENTIALS` | Voice output (TTS) | [console.cloud.google.com](https://console.cloud.google.com) | 1M chars/month |
+| `OPENROUTER_API_KEY` | Tertiary AI fallback *(optional)* | [openrouter.ai](https://openrouter.ai) | $1 free credit |
+| `NEWS_API_KEY` | News headlines skill | [newsapi.org](https://newsapi.org) | 100 req/day |
+| `OPENWEATHER_API_KEY` | Weather skill | [openweathermap.org](https://openweathermap.org) | 1,000 req/day |
+
+> **Google Cloud TTS setup:** Go to [console.cloud.google.com](https://console.cloud.google.com) → enable the Text-to-Speech API → create a Service Account → download the JSON key file → set `GOOGLE_APPLICATION_CREDENTIALS` to its full path.
 
 ---
 
 ## Installation
 
-### 1) Requirements
-
-- Node.js `>=22`
-- npm `>=10`
-- Python `>=3.11`
-- `uv`
-- Rust + Cargo
-- Visual Studio 2022 C++ Build Tools (Windows, for Tauri build)
-
-### 2) Clone
+### 1. Clone the repository
 
 ```bash
 git clone https://github.com/MadhavaKandala/Zenith.git
 cd Zenith
 ```
 
-### 3) Environment Setup
+### 2. Set up environment variables
 
 ```bash
 copy .env.sample .env
 ```
 
-Set these keys in `.env`:
+Open `.env` and fill in all your API keys:
 
-- `GOOGLE_API_KEY` for Gemini
-- `GROQ_API_KEY` for Groq LLM and Whisper STT
-- `OPENROUTER_API_KEY` for fallback routing
-- `LIVEKIT_URL`, `LIVEKIT_API_KEY`, `LIVEKIT_API_SECRET` for voice transport
-- `GOOGLE_APPLICATION_CREDENTIALS` path to Google Cloud service-account JSON (TTS)
+```env
+# AI Providers
+GOOGLE_API_KEY=AIza...
+GROQ_API_KEY=gsk_...
+OPENROUTER_API_KEY=sk-or-...        # optional
 
-### 4) Install Node Dependencies
+# Voice (LiveKit)
+LIVEKIT_URL=wss://your-project.livekit.cloud
+LIVEKIT_API_KEY=APIxxxxxxxx
+LIVEKIT_API_SECRET=xxxxxxxxxxxxxxxx
+
+# Voice Output (Google Cloud TTS)
+GOOGLE_APPLICATION_CREDENTIALS=C:\full\path\to\gcp-key.json
+
+# Skill APIs
+NEWS_API_KEY=xxxxxxxxxxxxxxxx
+OPENWEATHER_API_KEY=xxxxxxxxxxxxxxxx
+```
+
+> ⚠️ Never commit your `.env` file. It is already in `.gitignore`.
+
+### 3. Install Node.js dependencies
 
 ```bash
 npm install
 ```
 
-### 5) Install Voice Environment
+### 4. Install Python voice dependencies
 
 ```bash
 cd voice
@@ -221,177 +138,323 @@ uv sync
 cd ..
 ```
 
-### 6) Install Python Skill/Bridge Dependencies
+### 5. Install Python skill dependencies
 
 ```bash
-cd bridges/python
+cd bridges\python
 pip install wikipedia requests newsapi-python pyowm pytesseract playwright tinydb --break-system-packages
 python -m playwright install chromium
-cd ../..
+cd ..\..
 ```
 
-### 7) Verify Core Health
+### 6. Verify the installation
 
 ```bash
-npm run check
+# Check Leon/Zenith core
+leon check
+
+# Check AI providers
+python -c "from providers.manager import ZenithProviderManager; print('All providers OK')"
 ```
 
 ---
 
 ## Running Zenith
 
-ZENITH runs as three coordinated services for full voice + tool functionality.
+Zenith needs three processes running simultaneously.
 
-### Method A: Three terminals
+### Option A — Three terminals
 
-Terminal 1 (core):
+**Terminal 1 — Core engine**
 ```bash
 npm start
+# Wait for: "Server is listening on port 1337"
+# Then open: http://localhost:1337
 ```
 
-Terminal 2 (MCP tool server):
+**Terminal 2 — Tool server**
 ```bash
 cd voice
 uv run python mcp_server.py
+# Wait for: "Uvicorn running on http://0.0.0.0:8000"
 ```
 
-Terminal 3 (voice agent):
+**Terminal 3 — Voice agent**
 ```bash
 cd voice
-uv run python agent.py dev
+uv run python agent.py
+# Wait for: "Agent connected"
 ```
 
-Then open:
-
-- Dashboard: `http://localhost:1337`
-- LiveKit playground: `https://agents-playground.livekit.io`
-
-### Method B: PM2 process manager
+### Option B — pm2 (recommended for daily use)
 
 ```bash
+# One-time setup
 npm install -g pm2
-pm2 start npm --name zenith-core -- start
-pm2 start "uv run python mcp_server.py" --name zenith-mcp --cwd voice
-pm2 start "uv run python agent.py dev" --name zenith-voice --cwd voice
+pm2 start "npm start" --name "zenith-core"
+pm2 start "uv run python voice/mcp_server.py" --name "zenith-mcp"
+pm2 start "uv run python voice/agent.py" --name "zenith-voice"
 pm2 save
-pm2 logs
+pm2 startup
+
+# Every day
+pm2 start all      # start
+pm2 stop all       # stop
+pm2 status         # check
+pm2 restart all    # after code changes
 ```
 
-### Method C: Desktop app
+### Option C — Desktop app
 
 ```bash
-npm run tauri:dev
+# Run the built executable
+src-tauri\target\release\zenith.exe
+
+# Or in development mode
+npx tauri dev
 ```
 
-Production desktop build:
+> The desktop app is a native window wrapper. The three backend processes must still be running.
 
-```bash
-npm run tauri:build
+---
+
+## Using Zenith
+
+### Text mode
+
+Open [http://localhost:1337](http://localhost:1337) — type in the input box and press Enter.
+
+### Voice mode
+
+1. Go to [https://agents-playground.livekit.io](https://agents-playground.livekit.io)
+2. Connect using your LiveKit URL, API key, and secret
+3. Click the microphone and speak
+
+---
+
+## Skills
+
+### Reminders
+```
+"Remind me to call the doctor"
+"Set a reminder for the team standup"
+"What are my reminders?"
+"Delete my reminders"
+```
+
+### News
+```
+"What are today's headlines?"
+"Read me the news"
+"What's happening in the world?"
+```
+
+### Web & Browser
+```
+"Open YouTube"
+"Open GitHub"
+"Search for Python tutorials"
+"Browse to Google Maps"
+```
+
+### Q&A (powered by Gemini)
+```
+"What is quantum computing?"
+"Explain the difference between TCP and UDP"
+"How does photosynthesis work?"
+```
+*Any factual question — routed directly to Gemini.*
+
+### Wikipedia
+```
+"Search Wikipedia for Nikola Tesla"
+"Tell me about the Roman Empire"
+"Wikipedia: artificial intelligence"
+```
+
+### Weather
+```
+"What's the weather today?"
+"Weather in Hyderabad"
+"Is it going to rain?"
+```
+
+### Dictionary
+```
+"Define serendipity"
+"What does ephemeral mean?"
+"Dictionary: resilience"
+```
+
+### YouTube
+```
+"Play lo-fi music on YouTube"
+"YouTube: coding tutorials"
+"Search YouTube for Python beginner guide"
+```
+
+### OCR — Read text from images
+```
+"Read the text in this image"
+"Extract text from screenshot"
+```
+*Requires Tesseract installed at system level.*
+
+### Built-in skills
+| Skill | Example |
+|-------|---------|
+| To-do list | "Add buy milk to my to-do list" |
+| Is it down? | "Is GitHub down?" |
+| GitHub trending | "What's trending on GitHub?" |
+| Video downloader | "Download: [YouTube URL]" |
+
+---
+
+## The Dashboard
+
+Open [http://localhost:1337](http://localhost:1337) to see the three-panel HUD:
+
+| Panel | What it shows |
+|-------|--------------|
+| **Left — Orb** | Voice state animation: IDLE / LISTENING / THINKING / SPEAKING |
+| **Centre — Chat** | Full conversation history and text input |
+| **Right — Tool Monitor** | Live feed of every tool Zenith activates, with timestamps |
+
+---
+
+## AI Provider System
+
+Zenith uses an automatic three-tier fallback chain:
+
+```
+Gemini 2.5 Flash  →  Groq llama-3.3  →  OpenRouter
+   (primary)            (fallback)         (backup)
+```
+
+If one provider is unavailable or rate-limited, the next activates instantly — no action needed from you.
+
+To change models, edit `config/zenith.yaml`:
+
+```yaml
+llm:
+  gemini:
+    model: "gemini-2.5-flash"         # or gemini-2.5-pro
+  groq:
+    model: "llama-3.3-70b-versatile"
 ```
 
 ---
 
-## Skills Reference
+## Adding a New Skill
 
-### Custom Skills (Current)
+Every skill is a self-contained folder:
 
-- `reminders`: persistent reminders and follow-ups
-- `news`: global headlines
-- `chrome`: browser opening and search automation
-- `qa`: open-domain question handling
-- `wiki`: Wikipedia summaries
-- `weather`: weather conditions lookup
-- `dictionary`: meaning + correction support
-- `youtube`: query-based video search
-- `ocr`: text extraction from images
+```
+skills/{domain}/{skill_name}/
+├── __init__.py
+├── {skill_name}.py           ← your logic
+├── skill.json                ← metadata
+├── data/
+│   ├── expressions/en.json   ← trigger phrases
+│   └── answers/en.json       ← response templates
+└── config/
+    └── config.sample.json
+```
 
-### Built-in Skill Support
-
-ZENITH also includes built-in assistant capabilities provided by the core runtime, with routing through `core/langs.json` fallback entries.
-
-### Add a New Skill
-
-Create a new module with:
-
-- `skill.py` logic file
-- `data/expressions/en.json` trigger phrases
-- `data/answers/en.json` responses
-- `skill.json` metadata
-- `config/en.json` and `config/config.sample.json`
-
-Then register fallback words in `core/langs.json` and restart core.
+See `ZENITH_DOCUMENTATION.docx` for a full step-by-step walkthrough with a working example.
 
 ---
 
-## Folder Structure
+## Project Structure
 
-```text
+```
 Zenith/
-|- app/                    # HUD frontend (Vite + vanilla JS)
-|- config/                 # provider and runtime config
-|  |- zenith.yaml
-|  |- zenith.example.yaml
-|- core/                   # assistant core and language routing
-|- providers/              # Gemini/Groq/OpenRouter abstraction
-|- skills/                 # custom and built-in skills
-|  |- productivity/
-|  |- information/
-|  |- automation/
-|  |- knowledge/
-|  |- entertainment/
-|- voice/                  # voice agent + MCP server
-|  |- agent.py
-|  |- mcp_server.py
-|- bridges/python/         # python bridge dependencies
-|- src-tauri/              # desktop packaging and Rust runtime
-`- README.md
+├── skills/                   All skill plugins (9 domains)
+├── voice/                    Voice pipeline
+│   ├── agent.py              LiveKit voice agent
+│   ├── mcp_server.py         FastMCP tool server
+│   └── friday_tools/         Web search + system tools
+├── providers/                AI provider abstraction
+│   ├── manager.py            Fallback chain
+│   ├── gemini.py
+│   ├── groq_provider.py
+│   └── openrouter_provider.py
+├── config/
+│   ├── zenith.yaml           Main configuration
+│   └── zenith.example.yaml   Template
+├── app/src/                  Web dashboard (Vite)
+│   ├── index.html            HUD layout
+│   ├── css/style.css         Dark theme + animations
+│   └── js/
+│       ├── orb.js            Voice orb animation
+│       ├── monitor.js        Tool monitor
+│       └── client.js         WebSocket events
+├── server/                   NLU engine + HTTP/WS API
+├── hotword/                  Wake word detector
+├── bridges/python/           Python skill bridge
+├── src-tauri/                Desktop app (Tauri)
+│   └── target/release/
+│       └── zenith.exe        Built Windows executable
+├── .env                      Your API keys (never commit)
+└── ZENITH_DOCUMENTATION.docx Full setup & user guide
 ```
+
+---
+
+## Troubleshooting
+
+| Problem | Fix |
+|---------|-----|
+| Port 1337 in use | `netstat -ano \| findstr :1337` — kill that process |
+| npm install fails | Delete `node_modules/` and run `npm install` again |
+| Voice agent crashes | `cd voice && uv sync` to reinstall dependencies |
+| No voice output | Check `GOOGLE_APPLICATION_CREDENTIALS` path in `.env` |
+| Gemini not responding | Check rate limits at aistudio.google.com — Groq auto-activates as fallback |
+| Skill not triggering | Check `data/expressions/en.json` and restart `npm start` |
+
+> There is a non-breaking deprecation warning from `google.generativeai` on startup. It is safe to ignore — Gemini works fully. The fix when ready: `pip install google-genai` and update the import in `providers/gemini.py`.
 
 ---
 
 ## Roadmap
 
-- Multilingual voice and skill support
-- Face authentication and identity profiles
-- Custom wake-word engine
-- Long-term memory with contextual recall
-- Mobile companion application
-- Autonomous skill generation pipeline
+- [ ] Embedded voice UI in dashboard (no external playground needed)
+- [ ] Hindi / multilingual support
+- [ ] Face authentication on startup
+- [ ] Custom "Hey Zenith" wake word
+- [ ] JSON web scraping skill
+- [ ] Long-term memory across sessions
+- [ ] Mobile companion app
+- [ ] Autonomous skill creation
 
 ---
 
-## Future Vision
+## Quick Reference
 
-ZENITH is positioned as a personal AI operating layer rather than a single chatbot. The next evolution is a persistent local intelligence fabric: voice-native interaction, autonomous task execution, dynamic skill synthesis, and cross-device presence with strict owner control over data, providers, and behavior.
+```bash
+# Start
+pm2 start all
 
----
+# Stop  
+pm2 stop all
 
-## Contributing
+# Logs
+pm2 logs zenith-core
+pm2 logs zenith-voice
 
-Contributions are welcome for:
+# Health check
+leon check
 
-- new skills and tool integrations
-- performance and reliability improvements
-- voice UX quality upgrades
-- dashboard and desktop polish
-
-Workflow:
-
-1. Fork the repo
-2. Create a feature branch
-3. Commit focused changes
-4. Open a pull request with test notes
+# Dashboard
+http://localhost:1337
+```
 
 ---
 
-## License
+<div align="center">
 
-This project is licensed under the MIT License. See `LICENSE.md`.
+**ZENITH** — Personal AI Assistant
 
----
+[github.com/MadhavaKandala/Zenith](https://github.com/MadhavaKandala/Zenith)
 
-## Creator
-
-Created and maintained by **Madhava Kandala**.
-
-GitHub: [https://github.com/MadhavaKandala](https://github.com/MadhavaKandala)
+</div>
