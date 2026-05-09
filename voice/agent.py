@@ -16,6 +16,7 @@ import os
 import logging
 import subprocess
 import httpx
+from pathlib import Path
 
 from dotenv import load_dotenv
 from livekit.agents import JobContext, WorkerOptions, cli
@@ -148,7 +149,8 @@ Wrong: "The stock market performed positively with gains across major indices.
 # Bootstrap
 # ---------------------------------------------------------------------------
 
-load_dotenv()
+ROOT_ENV_PATH = Path(__file__).resolve().parents[1] / ".env"
+load_dotenv(dotenv_path=ROOT_ENV_PATH)
 
 logger = logging.getLogger("friday-agent")
 logger.setLevel(logging.INFO)
@@ -346,9 +348,11 @@ async def entrypoint(ctx: JobContext) -> None:
         min_endpointing_delay=_endpointing_delay(),
     )
 
-    await session.start(
-        agent=FridayAgent(stt=stt, llm=llm, tts=tts),
-        room=ctx.room,
+    agent = FridayAgent(stt=stt, llm=llm, tts=tts)
+    await session.start(agent=agent, room=ctx.room)
+    await session.say(
+        "Hello, I am Zenith, your personal AI assistant. How can I help you?",
+        allow_interruptions=True,
     )
 
 
@@ -357,7 +361,12 @@ async def entrypoint(ctx: JobContext) -> None:
 # ---------------------------------------------------------------------------
 
 def main():
-    cli.run_app(WorkerOptions(entrypoint_fnc=entrypoint))
+    cli.run_app(
+        WorkerOptions(
+            entrypoint_fnc=entrypoint,
+            agent_name="zenith",
+        )
+    )
 
 def dev():
     """Wrapper to run the agent in dev mode automatically."""

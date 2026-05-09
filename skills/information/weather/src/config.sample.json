@@ -1,4 +1,6 @@
 {
   "$schema": "../../../../schemas/skill-schemas/skill-config.json",
-  "configurations": {}
+  "configurations": {
+    "api_key": ""
+  }
 }

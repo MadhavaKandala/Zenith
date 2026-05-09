@@ -3,7 +3,7 @@ export class StringHelper {
    * Parse, map (with object) and replace value(s) in a string
    * @param toReplace The string containing the placeholders to replace
    * @param obj The object containing the value(s) to replace with
-   * @example findAndMap('Hello %name%!', { '%name%': 'Louis' }) // Hello Louis!
+   * @example findAndMap('Hello %name%!', { '%name%': 'Madhava' }) // Hello Madhava!
    */
   public static findAndMap(
     toReplace: string,

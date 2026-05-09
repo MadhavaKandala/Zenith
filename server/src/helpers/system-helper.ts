@@ -140,7 +140,7 @@ export class SystemHelper {
 
   /**
    * Replace all current session profile name occurrences with {username} placeholder
-   * @example sanitizeUsername('/home/louis') // '/home/{username}'
+   * @example sanitizeUsername('/home/madhava') // '/home/{username}'
    */
   public static sanitizeUsername(str: string): string {
     const { username } = os.userInfo()
