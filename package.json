@@ -97,7 +97,7 @@
     "fluent-ffmpeg": "2.1.2",
     "getos": "3.2.1",
     "googleapis": "67.1.1",
-    "ibm-watson": "6.1.1",
+    "ibm-watson": "12.2.0",
     "livekit-client": "2.18.9",
     "livekit-server-sdk": "2.15.2",
     "node-wav": "0.0.2",
