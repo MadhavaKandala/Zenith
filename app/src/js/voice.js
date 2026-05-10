@@ -1,3 +1,5 @@
+import * as LK from 'livekit-client'
+
 import { setOrbState } from './orb.js'
 
 let room = null
@@ -19,8 +21,11 @@ async function connectVoice() {
     if (!res.ok) throw new Error('Token fetch failed: ' + res.status)
     const { token, url } = await res.json()
 
-    // Use window.LiveKitClient loaded from CDN
-    const LK = window.LiveKitClient
+    console.log(
+      'LiveKit loaded:',
+      !!LK,
+      Object.keys(LK).filter((k) => k.toLowerCase().includes('livekit'))
+    )
     if (!LK) throw new Error('LiveKit client not loaded')
 
     room = new LK.Room({ adaptiveStream: true })
