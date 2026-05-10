@@ -30,18 +30,43 @@ async function connectVoice() {
 
     room = new LK.Room({ adaptiveStream: true })
 
-    // Agent audio -> orb speaking
-    room.on(LK.RoomEvent.TrackSubscribed, (track) => {
+    room.on(LK.RoomEvent.TrackSubscribed, (track, publication, participant) => {
+      // ONLY attach audio from REMOTE participants (the agent)
+      // Never attach local participant audio — that causes echo
       if (track.kind === LK.Track.Kind.Audio) {
+        const isLocal = participant.isLocal
+        if (isLocal) {
+          console.log('Skipping local audio track - no echo')
+          return
+        }
+
         setOrbState('speaking')
-        const el = track.attach()
-        el.style.display = 'none'
-        document.body.appendChild(el)
+        const audioEl = track.attach()
+        audioEl.style.display = 'none'
+        audioEl.autoplay = true
+        document.body.appendChild(audioEl)
+        console.log('Agent audio attached from:', participant.identity)
       }
     })
 
-    room.on(LK.RoomEvent.TrackUnsubscribed, () => {
-      setOrbState('listening')
+    room.on(LK.RoomEvent.TrackUnsubscribed, (track, publication, participant) => {
+      if (track.kind === LK.Track.Kind.Audio && !participant.isLocal) {
+        track.detach().forEach((el) => el.remove())
+        setOrbState('listening')
+      }
+    })
+
+    room.on(LK.RoomEvent.ActiveSpeakersChanged, (speakers) => {
+      const localSpeaking = speakers.some((speaker) => speaker.isLocal)
+      const agentSpeaking = speakers.some((speaker) => !speaker.isLocal)
+
+      if (agentSpeaking) {
+        setOrbState('speaking')
+      } else if (localSpeaking) {
+        setOrbState('thinking')
+      } else {
+        setOrbState('listening')
+      }
     })
 
     room.on(LK.RoomEvent.Disconnected, () => {
@@ -54,7 +79,11 @@ async function connectVoice() {
     })
 
     await room.connect(url, token)
-    await room.localParticipant.setMicrophoneEnabled(true)
+    await room.localParticipant.setMicrophoneEnabled(true, {
+      noiseSuppression: true,
+      echoCancellation: true,
+      autoGainControl: true
+    })
 
     isConnected = true
     setOrbState('listening')
