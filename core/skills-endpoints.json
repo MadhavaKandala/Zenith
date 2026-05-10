@@ -153,6 +153,26 @@
       "params": []
     },
     {
+      "method": "GET",
+      "route": "/api/action/information/dictionary/translate",
+      "params": []
+    },
+    {
+      "method": "GET",
+      "route": "/api/action/information/news/get_headlines",
+      "params": []
+    },
+    {
+      "method": "GET",
+      "route": "/api/action/information/weather/get_weather",
+      "params": []
+    },
+    {
+      "method": "GET",
+      "route": "/api/action/information/wiki/search_wikipedia",
+      "params": []
+    },
+    {
       "method": "POST",
       "route": "/api/action/games/akinator/choose_thematic",
       "params": [
@@ -206,26 +226,6 @@
     {
       "method": "GET",
       "route": "/api/action/games/rochambeau/rematch",
-      "params": []
-    },
-    {
-      "method": "GET",
-      "route": "/api/action/information/dictionary/translate",
-      "params": []
-    },
-    {
-      "method": "GET",
-      "route": "/api/action/information/news/get_headlines",
-      "params": []
-    },
-    {
-      "method": "GET",
-      "route": "/api/action/information/weather/get_weather",
-      "params": []
-    },
-    {
-      "method": "GET",
-      "route": "/api/action/information/wiki/search_wikipedia",
       "params": []
     },
     {

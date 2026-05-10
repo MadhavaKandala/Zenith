@@ -4,6 +4,7 @@ import Fastify, { FastifySchema } from 'fastify'
 import fastifyStatic from '@fastify/static'
 import { Type } from '@sinclair/typebox'
 import type { Static } from '@sinclair/typebox'
+import { AccessToken } from 'livekit-server-sdk'
 
 import {
   LEON_VERSION,
@@ -85,6 +86,41 @@ export default class HTTPServer {
     })
     this.fastify.get('/', (_request, reply) => {
       reply.sendFile('index.html')
+    })
+
+    this.fastify.get('/api/livekit-token', async (_request, reply) => {
+      try {
+        const apiKey = process.env['LIVEKIT_API_KEY']
+        const apiSecret = process.env['LIVEKIT_API_SECRET']
+        const url = process.env['LIVEKIT_URL']
+
+        if (!apiKey || !apiSecret || !url) {
+          return reply.status(500).send({
+            error: 'LiveKit env vars missing',
+            missing: {
+              LIVEKIT_API_KEY: !apiKey,
+              LIVEKIT_API_SECRET: !apiSecret,
+              LIVEKIT_URL: !url
+            }
+          })
+        }
+
+        const at = new AccessToken(apiKey, apiSecret, {
+          identity: 'zenith-user-' + Date.now(),
+          ttl: '1h'
+        })
+        at.addGrant({
+          roomJoin: true,
+          room: 'zenith-room',
+          canPublish: true,
+          canSubscribe: true
+        })
+
+        const token = await at.toJwt()
+        return reply.send({ token, url, room: 'zenith-room' })
+      } catch (err) {
+        return reply.status(500).send({ error: String(err) })
+      }
     })
 
     this.fastify.register(infoPlugin, { apiVersion: API_VERSION })

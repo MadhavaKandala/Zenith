@@ -7,6 +7,7 @@ import listener from './listener'
 import { onkeydowndocument, onkeydowninput } from './onkeydown'
 import { initOrb, setOrbState } from './orb.js'
 import { addToolEvent } from './monitor.js'
+import { toggleVoice } from './voice.js'
 
 const config = {
   app: 'webapp',
@@ -31,6 +32,10 @@ document.addEventListener('DOMContentLoaded', async () => {
   setInterval(updateClock, 1000)
   setOrbState('idle')
   addToolEvent({ tool: 'system:boot', timestamp: Date.now() })
+  const micBtn = document.getElementById('zenith-mic-btn')
+  if (micBtn) {
+    micBtn.addEventListener('click', toggleVoice)
+  }
 
   const loader = new Loader()
 
