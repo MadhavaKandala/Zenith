@@ -5,6 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 from random import choice
 import json
+from xml.etree import ElementTree
 
 import requests
 
@@ -39,23 +40,35 @@ def get_headlines(string, entities):
     api_key = config.get("newsapi_key", "")
     max_articles = config.get("max_articles") or 5
 
-    if not api_key:
-        return _respond("missing_api_key")
+    headlines = []
+    if api_key:
+        url = (
+            "https://newsapi.org/v2/top-headlines"
+            f"?country=in&apiKey={api_key}&pageSize={max_articles}"
+        )
+        response = requests.get(url, timeout=15)
+        data = response.json()
+        if data.get("status") == "ok":
+            headlines = [
+                article["title"]
+                for article in data.get("articles", [])
+                if article.get("title")
+            ]
 
-    url = (
-        "https://newsapi.org/v2/top-headlines"
-        f"?country=in&apiKey={api_key}&pageSize={max_articles}"
-    )
-    response = requests.get(url, timeout=15)
-    data = response.json()
+    if not headlines:
+        response = requests.get(
+            "https://news.google.com/rss?hl=en-IN&gl=IN&ceid=IN:en",
+            timeout=15,
+        )
+        root = ElementTree.fromstring(response.content)
+        headlines = [
+            item.findtext("title", "").strip()
+            for item in root.findall(".//item")[: int(max_articles)]
+        ]
+        headlines = [headline for headline in headlines if headline]
 
-    if data.get("status") != "ok":
-        return _respond("fetch_error")
-
-    headlines = [article["title"] for article in data.get("articles", []) if article.get("title")]
     if not headlines:
         return _respond("fetch_error")
 
     result = ". ".join(headlines)
     return _respond("headlines", {"news": result})
-

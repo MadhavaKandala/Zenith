@@ -17,12 +17,6 @@
           "action": "get_headlines"
         },
         {
-          "words": ["open", "website", "browse", "chrome"],
-          "domain": "automation",
-          "skill": "chrome",
-          "action": "open_website"
-        },
-        {
           "words": ["answer", "question"],
           "domain": "knowledge",
           "skill": "qa",

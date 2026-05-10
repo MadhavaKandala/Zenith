@@ -2,31 +2,7 @@
   "endpoints": [
     {
       "method": "GET",
-      "route": "/api/action/entertainment/youtube/youtube",
-      "params": []
-    },
-    {
-      "method": "GET",
       "route": "/api/action/knowledge/qa/answer",
-      "params": []
-    },
-    {
-      "method": "POST",
-      "route": "/api/action/news/github_trends/run",
-      "params": [
-        "number",
-        "daterange"
-      ],
-      "entitiesType": "builtIn"
-    },
-    {
-      "method": "GET",
-      "route": "/api/action/news/product_hunt_trends/run",
-      "params": []
-    },
-    {
-      "method": "GET",
-      "route": "/api/action/productivity/ocr/extract_text",
       "params": []
     },
     {
@@ -120,6 +96,20 @@
       "params": []
     },
     {
+      "method": "POST",
+      "route": "/api/action/news/github_trends/run",
+      "params": [
+        "number",
+        "daterange"
+      ],
+      "entitiesType": "builtIn"
+    },
+    {
+      "method": "GET",
+      "route": "/api/action/news/product_hunt_trends/run",
+      "params": []
+    },
+    {
       "method": "GET",
       "route": "/api/action/utilities/have_i_been_pwned/run",
       "params": []
@@ -140,36 +130,6 @@
     {
       "method": "GET",
       "route": "/api/action/utilities/youtube_downloader/run",
-      "params": []
-    },
-    {
-      "method": "GET",
-      "route": "/api/action/automation/chrome/open_website",
-      "params": []
-    },
-    {
-      "method": "GET",
-      "route": "/api/action/automation/chrome/search_web",
-      "params": []
-    },
-    {
-      "method": "GET",
-      "route": "/api/action/information/dictionary/translate",
-      "params": []
-    },
-    {
-      "method": "GET",
-      "route": "/api/action/information/news/get_headlines",
-      "params": []
-    },
-    {
-      "method": "GET",
-      "route": "/api/action/information/weather/get_weather",
-      "params": []
-    },
-    {
-      "method": "GET",
-      "route": "/api/action/information/wiki/search_wikipedia",
       "params": []
     },
     {
@@ -291,6 +251,26 @@
     {
       "method": "GET",
       "route": "/api/action/leon/welcome/run",
+      "params": []
+    },
+    {
+      "method": "GET",
+      "route": "/api/action/information/dictionary/translate",
+      "params": []
+    },
+    {
+      "method": "GET",
+      "route": "/api/action/information/news/get_headlines",
+      "params": []
+    },
+    {
+      "method": "GET",
+      "route": "/api/action/information/weather/get_weather",
+      "params": []
+    },
+    {
+      "method": "GET",
+      "route": "/api/action/information/wiki/search_wikipedia",
       "params": []
     }
   ]

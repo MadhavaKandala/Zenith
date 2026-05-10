@@ -1,6 +1,7 @@
 import { join } from 'node:path'
 import { spawn } from 'node:child_process'
 
+import axios from 'axios'
 import kill from 'tree-kill'
 
 import type { Language, ShortLanguageCode } from '@/types'
@@ -14,14 +15,13 @@ import type {
   NLUResult
 } from '@/core/nlp/types'
 import { langs } from '@@/core/langs.json'
-import { TCP_SERVER_BIN_PATH } from '@/constants'
+import { HOST, PORT, TCP_SERVER_BIN_PATH } from '@/constants'
 import { TCP_CLIENT, BRAIN, SOCKET_SERVER, MODEL_LOADER, NER } from '@/core'
 import { LogHelper } from '@/helpers/log-helper'
 import { LangHelper } from '@/helpers/lang-helper'
 import { ActionLoop } from '@/core/nlp/nlu/action-loop'
 import { SlotFilling } from '@/core/nlp/nlu/slot-filling'
 import Conversation, { DEFAULT_ACTIVE_CONTEXT } from '@/core/nlp/conversation'
-import { Telemetry } from '@/telemetry'
 
 export const DEFAULT_NLU_RESULT = {
   utterance: '',
@@ -78,6 +78,95 @@ export default class NLU {
       TCP_CLIENT.ee.removeListener('connected', connectedHandler)
       TCP_CLIENT.ee.on('connected', connectedHandler)
     })
+  }
+
+  private async handleGeminiFallback(
+    utterance: NLPUtterance,
+    processingTimeStart: number
+  ): Promise<NLUProcessResult> {
+    let answer = "I'm having trouble connecting to my AI systems, sir."
+
+    try {
+      const { data } = await axios.post<{ answer?: string }>(
+        `${HOST || 'http://localhost'}:${PORT || 1337}/api/gemini-fallback`,
+        { utterance },
+        {
+          headers: { 'Content-Type': 'application/json' },
+          timeout: 20_000
+        }
+      )
+
+      answer = data.answer || answer
+    } catch (error) {
+      LogHelper.error(`Gemini fallback failed: ${error}`)
+    }
+
+    if (!BRAIN.isMuted) {
+      BRAIN.talk(answer, true)
+      SOCKET_SERVER.socket?.emit('is-typing', false)
+    }
+
+    const processingTime = Date.now() - processingTimeStart
+
+    return {
+      ...this.nluResult,
+      lang: BRAIN.lang,
+      speeches: [answer],
+      executionTime: 0,
+      processingTime,
+      nluProcessingTime: processingTime
+    }
+  }
+
+  private shouldForceGeminiFallback(locale: ShortLanguageCode): boolean {
+    const utterance = this.nluResult.utterance.trim().toLowerCase()
+    const isIdentityQuestion =
+      /^who are you\b/.test(utterance) ||
+      /^what(?:'s| is) your name\b/.test(utterance) ||
+      /^tell me who you are\b/.test(utterance) ||
+      /^introduce yourself\b/.test(utterance) ||
+      /^who made you\b/.test(utterance)
+
+    if (isIdentityQuestion) {
+      return false
+    }
+
+    const isCapabilityQuestion =
+      /^what can you do\b/.test(utterance) ||
+      /^what are your skills\b/.test(utterance) ||
+      /^what do you do\b/.test(utterance)
+
+    if (isCapabilityQuestion) {
+      return true
+    }
+
+    if (this.nluResult.classification.skill === 'qa') {
+      return true
+    }
+
+    const isKnowledgeQuestion =
+      /^(who|what|when|where|why|how|which)\b/.test(utterance) ||
+      /^tell me about\b/.test(utterance) ||
+      /^explain\b/.test(utterance) ||
+      /^define\b/.test(utterance)
+
+    if (!isKnowledgeQuestion) {
+      return false
+    }
+
+    const directAnswerSkills = new Set(['weather', 'news', 'wiki', 'dictionary'])
+
+    if (directAnswerSkills.has(this.nluResult.classification.skill)) {
+      return false
+    }
+
+    return (
+      this.nluResult.classification.confidence <
+        langs[LangHelper.getLongCode(locale)].min_confidence + 0.05 ||
+      ['leon', 'productivity', 'utilities', 'games'].includes(
+        this.nluResult.classification.domain
+      )
+    )
   }
 
   /**
@@ -179,27 +268,28 @@ export default class NLU {
         return resolve(null)
       }
 
-      if (intent === 'None') {
-        const fallback = this.fallback(
-          langs[LangHelper.getLongCode(locale)].fallbacks
-        )
-
-        if (!fallback) {
-          if (!BRAIN.isMuted) {
-            BRAIN.talk(`${BRAIN.wernicke('random_unknown_intents')}.`, true)
-            SOCKET_SERVER.socket?.emit('is-typing', false)
-          }
-
-          LogHelper.title('NLU')
-          const msg = 'Intent not found'
-          LogHelper.warning(msg)
-
-          Telemetry.utterance({ utterance, lang: BRAIN.lang })
-
-          return resolve(null)
-        }
-
+      const fallback =
+        intent === 'None'
+          ? this.fallback(langs[LangHelper.getLongCode(locale)].fallbacks)
+          : null
+      if (fallback) {
         this.nluResult = fallback
+        intent = `${fallback.classification.skill}.${fallback.classification.action}`
+      }
+
+      if (
+        !fallback &&
+        (intent === 'None' ||
+          this.shouldForceGeminiFallback(locale) ||
+          this.nluResult.classification.confidence <
+            langs[LangHelper.getLongCode(locale)].min_confidence)
+      ) {
+        LogHelper.title('NLU')
+        LogHelper.warning('Using Gemini fallback')
+
+        return resolve(
+          await this.handleGeminiFallback(utterance, processingTimeStart)
+        )
       }
 
       LogHelper.title('NLU')
@@ -244,7 +334,7 @@ export default class NLU {
         }
       }
 
-      const newContextName = `${this.nluResult.classification.domain}.${skillName}`
+      const newContextName = `${this.nluResult.classification.domain}.${this.nluResult.classification.skill}`
       if (this.conversation.activeContext.name !== newContextName) {
         this.conversation.cleanActiveContext()
       }
