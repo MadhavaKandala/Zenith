@@ -4,7 +4,7 @@ import Fastify, { FastifySchema } from 'fastify'
 import fastifyStatic from '@fastify/static'
 import { Type } from '@sinclair/typebox'
 import type { Static } from '@sinclair/typebox'
-import { AccessToken } from 'livekit-server-sdk'
+import { AccessToken, AgentDispatchClient } from 'livekit-server-sdk'
 
 import {
   LEON_VERSION,
@@ -89,11 +89,15 @@ export default class HTTPServer {
       reply.sendFile('index.html')
     })
 
-    this.fastify.get('/api/livekit-token', async (_request, reply) => {
+    this.fastify.get('/api/livekit-token', async (request, reply) => {
       try {
         const apiKey = process.env['LIVEKIT_API_KEY']
         const apiSecret = process.env['LIVEKIT_API_SECRET']
         const url = process.env['LIVEKIT_URL']
+        const query = (request.query || {}) as {
+          voiceId?: string
+          voiceLabel?: string
+        }
 
         if (!apiKey || !apiSecret || !url) {
           return reply.status(500).send({
@@ -106,19 +110,52 @@ export default class HTTPServer {
           })
         }
 
+        const roomName = `zenith-room-${Date.now()}`
+        const voiceId =
+          typeof query.voiceId === 'string'
+            ? query.voiceId.replace(/[^A-Za-z0-9]/g, '').slice(0, 64)
+            : ''
+        const voiceLabel =
+          typeof query.voiceLabel === 'string'
+            ? query.voiceLabel.replace(/[^\w\s-]/g, '').trim().slice(0, 48)
+            : ''
+        const dispatchHost = url
+          .replace(/^wss:/, 'https:')
+          .replace(/^ws:/, 'http:')
+        const dispatchClient = new AgentDispatchClient(
+          dispatchHost,
+          apiKey,
+          apiSecret
+        )
+
+        await dispatchClient.createDispatch(roomName, 'zenith', {
+          metadata: JSON.stringify({
+            source: 'zenith-webapp',
+            voiceId,
+            voiceLabel
+          })
+        })
+
         const at = new AccessToken(apiKey, apiSecret, {
           identity: 'zenith-user-' + Date.now(),
           ttl: '1h'
         })
         at.addGrant({
           roomJoin: true,
-          room: 'zenith-room',
+          room: roomName,
           canPublish: true,
           canSubscribe: true
         })
 
         const token = await at.toJwt()
-        return reply.send({ token, url, room: 'zenith-room' })
+        return reply.send({
+          token,
+          url,
+          room: roomName,
+          agentName: 'zenith',
+          voiceId,
+          voiceLabel
+        })
       } catch (err) {
         return reply.status(500).send({ error: String(err) })
       }

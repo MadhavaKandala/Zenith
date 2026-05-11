@@ -1,161 +1,195 @@
-import axios from 'axios'
-
-import Loader from './loader'
-import Client from './client'
-import Recorder from './recorder'
-import listener from './listener'
-import { onkeydowndocument, onkeydowninput } from './onkeydown'
-import { initOrb, setOrbState } from './orb.js'
-import { addToolEvent } from './monitor.js'
+import { io } from 'socket.io-client'
 import { toggleVoice } from './voice.js'
 
-const config = {
-  app: 'webapp',
-  server_host: import.meta.env.VITE_LEON_HOST,
-  server_port: import.meta.env.VITE_LEON_PORT,
-  min_decibels: -40, // Noise detection sensitivity
-  max_blank_time: 1_000 // Maximum time to consider a blank (ms)
+// ── Globals ──────────────────────────────
+window.handleVoice = toggleVoice
+window.sendQuick = (text) => {
+  document.getElementById('text-input').value = text
+  window.submitText()
 }
-const serverUrl =
-  import.meta.env.VITE_LEON_NODE_ENV === 'production'
-    ? ''
-    : `${config.server_host}:${config.server_port}`
+window.submitText = () => {
+  const input = document.getElementById('text-input')
+  const text = input.value.trim()
+  if (!text) return
+  input.value = ''
+  addMsg('YOU', text, 'user')
+  logAct('Query sent', true)
+  setOrb('thinking')
+  socket.emit('utterance', { client: 'webapp', value: text })
+}
+window.onKey = (e) => { if (e.key === 'Enter') window.submitText() }
+window.clearChat = () => {
+  document.getElementById('messages').innerHTML = ''
+  addMsg('ZENITH', 'Conversation cleared, sir.', 'agent')
+}
 
-document.addEventListener('DOMContentLoaded', async () => {
-  const updateClock = () => {
-    const clock = document.getElementById('hud-clock')
-    if (clock) clock.textContent = new Date().toLocaleTimeString()
+// ── Clock (IST) ───────────────────────────
+function updateClock() {
+  const now = new Date()
+  const opts = { timeZone: 'Asia/Kolkata' }
+  const timeStr = now.toLocaleTimeString('en-IN', { ...opts, hour12: false })
+  const dateStr = now.toLocaleDateString('en-IN', {
+    ...opts, weekday: 'short', day: '2-digit',
+    month: 'short', year: 'numeric'
+  })
+  const t = document.getElementById('clock-time')
+  const d = document.getElementById('clock-date')
+  if (t) t.textContent = timeStr + ' IST'
+  if (d) d.textContent = dateStr.toUpperCase()
+}
+updateClock()
+setInterval(updateClock, 1000)
+
+// ── Canvas background animation ───────────
+const canvas = document.getElementById('bg-canvas')
+if (canvas) {
+  const ctx = canvas.getContext('2d')
+  canvas.width = window.innerWidth
+  canvas.height = window.innerHeight
+  
+  const particles = Array.from({length: 60}, () => ({
+    x: Math.random() * canvas.width,
+    y: Math.random() * canvas.height,
+    vx: (Math.random() - 0.5) * 0.3,
+    vy: (Math.random() - 0.5) * 0.3,
+    size: Math.random() * 1.5 + 0.5,
+    alpha: Math.random() * 0.4 + 0.1,
+  }))
+
+  function drawCanvas() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height)
+    particles.forEach(p => {
+      p.x += p.vx; p.y += p.vy
+      if (p.x < 0) p.x = canvas.width
+      if (p.x > canvas.width) p.x = 0
+      if (p.y < 0) p.y = canvas.height
+      if (p.y > canvas.height) p.y = 0
+      ctx.beginPath()
+      ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2)
+      ctx.fillStyle = `rgba(0,212,255,${p.alpha})`
+      ctx.fill()
+    })
+    requestAnimationFrame(drawCanvas)
   }
+  drawCanvas()
 
-  initOrb()
-  updateClock()
-  setInterval(updateClock, 1000)
-  setOrbState('idle')
-  addToolEvent({ tool: 'system:boot', timestamp: Date.now() })
-  const micBtn = document.getElementById('zenith-mic-btn')
-  if (micBtn) {
-    micBtn.addEventListener('click', toggleVoice)
-  }
+  window.addEventListener('resize', () => {
+    canvas.width = window.innerWidth
+    canvas.height = window.innerHeight
+  })
+}
 
-  const loader = new Loader()
+// ── Socket ────────────────────────────────
+const socket = io()
 
-  loader.start()
+socket.on('connect', () => {
+  socket.emit('init', 'webapp')
+  logAct('Core connected', true)
+})
+socket.on('ready', () => logAct('Command channel ready', true))
+socket.on('disconnect', () => logAct('Core disconnected'))
 
-  try {
-    const response = await axios.get(`${serverUrl}/api/v1/info`)
-    const input = document.querySelector('#utterance')
-    const mic = document.querySelector('#mic-button')
-    const v = document.querySelector('#version small')
-    const client = new Client(config.app, serverUrl, input, response.data)
-    let rec = {}
-    let chunks = []
+socket.on('answer', (data) => {
+  removeTyping()
+  const text = data.value || data.answer || JSON.stringify(data)
+  addMsg('ZENITH', text, 'agent')
+  setOrb('idle')
+  logAct('Response delivered', true)
+})
 
-    v.innerHTML += client.info.version
-
-    client.init(loader)
-
-    if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-      navigator.mediaDevices
-        .getUserMedia({ audio: true })
-        .then((stream) => {
-          if (MediaRecorder) {
-            rec = new Recorder(stream, mic, client.info)
-            client.recorder = rec
-
-            rec.ondataavailable((e) => {
-              chunks.push(e.data)
-            })
-
-            rec.onstart(() => {
-              /* */
-            })
-
-            rec.onstop(() => {
-              const blob = new Blob(chunks)
-              chunks = []
-              rec.enabled = false
-
-              // Ensure there are some data
-              if (blob.size >= 1_000) {
-                client.socket.emit('recognize', blob)
-              }
-            })
-
-            listener.listening(
-              stream,
-              config.min_decibels,
-              config.max_blank_time,
-              () => {
-                // Noise detected
-                rec.noiseDetected = true
-              },
-              () => {
-                // Noise ended
-
-                rec.noiseDetected = false
-                if (rec.enabled && !rec.hotwordTriggered) {
-                  rec.stop()
-                  rec.enabled = false
-                  rec.hotwordTriggered = false
-                  rec.countSilenceAfterTalk = 0
-                }
-              }
-            )
-
-            client.socket.on('enable-record', () => {
-              rec.hotwordTriggered = true
-              rec.start()
-              setTimeout(() => {
-                rec.hotwordTriggered = false
-              }, config.max_blank_time)
-              rec.enabled = true
-            })
-          } else {
-            console.error('MediaRecorder is not supported on your browser.')
-          }
-        })
-        .catch((err) => {
-          console.error(
-            'MediaDevices.getUserMedia() threw the following error:',
-            err
-          )
-        })
-    } else {
-      console.error(
-        'MediaDevices.getUserMedia() is not supported on your browser.'
-      )
-    }
-
-    document.addEventListener('keydown', (e) => {
-      onkeydowndocument(e, () => {
-        if (rec.enabled === false) {
-          input.value = ''
-          rec.start()
-          rec.enabled = true
-        } else {
-          rec.stop()
-          rec.enabled = false
-        }
-      })
-    })
-
-    input.addEventListener('keydown', (e) => {
-      onkeydowninput(e, client)
-    })
-
-    mic.addEventListener('click', (e) => {
-      e.preventDefault()
-
-      if (rec.enabled === false) {
-        rec.start()
-        rec.enabled = true
-      } else {
-        rec.stop()
-        rec.enabled = false
-      }
-    })
-  } catch (e) {
-    alert(`Error: ${e.message}; ${JSON.stringify(e.response?.data)}`)
-    console.error(e)
+socket.on('is-typing', (data) => {
+  const isTyping = typeof data === 'boolean' ? data : data?.value
+  if (isTyping) {
+    setOrb('thinking')
+    showTyping()
+  } else {
+    removeTyping()
   }
 })
+
+socket.on('zenith:state_change', (d) => setOrb(d.state))
+socket.on('zenith:tool_call', (d) => logAct('Tool: ' + (d.tool || '—'), true))
+
+// ── Orb state ─────────────────────────────
+export function setOrb(state) {
+  document.body.className = state
+  const label = document.getElementById('orb-label')
+  const sub = document.getElementById('orb-sub')
+  const subs = {
+    idle: 'Ready for commands',
+    listening: 'Listening...',
+    thinking: 'Processing...',
+    speaking: 'Responding...',
+  }
+  if (label) label.textContent = state.toUpperCase()
+  if (sub) sub.textContent = subs[state] || ''
+
+  // Update voice chip
+  const chip = document.getElementById('chip-voice-text')
+  const dot = document.querySelector('#chip-voice .chip-dot')
+  if (chip) chip.textContent = state === 'idle' ? 'VOICE STANDBY' : ('VOICE ' + state.toUpperCase())
+  if (dot) {
+    dot.classList.toggle('inactive', state === 'idle')
+  }
+  const sysVoice = document.getElementById('sys-voice')
+  if (sysVoice) sysVoice.textContent = state === 'idle' ? 'STANDBY' : state.toUpperCase()
+}
+
+// ── Messages ──────────────────────────────
+function addMsg(sender, text, type) {
+  const container = document.getElementById('messages')
+  const row = document.createElement('div')
+  row.className = 'msg-row ' + type
+  row.innerHTML = `
+    <div class="msg-sender">${sender}</div>
+    <div class="msg-bubble">${text}</div>
+  `
+  container.appendChild(row)
+  container.scrollTop = container.scrollHeight
+}
+
+let typingEl = null
+function showTyping() {
+  if (typingEl) return
+  const container = document.getElementById('messages')
+  typingEl = document.createElement('div')
+  typingEl.className = 'msg-row agent'
+  typingEl.innerHTML = `
+    <div class="msg-sender">ZENITH</div>
+    <div class="msg-bubble">
+      <div class="typing-dots">
+        <span></span><span></span><span></span>
+      </div>
+    </div>
+  `
+  container.appendChild(typingEl)
+  container.scrollTop = container.scrollHeight
+}
+
+function removeTyping() {
+  if (typingEl) { typingEl.remove(); typingEl = null }
+}
+
+// ── Activity log ──────────────────────────
+function logAct(text, highlight = false) {
+  const list = document.getElementById('activity-list')
+  if (!list) return
+  const item = document.createElement('div')
+  item.className = 'act-item' + (highlight ? ' highlight' : '')
+  const now = new Date().toLocaleTimeString('en-IN', {
+    timeZone: 'Asia/Kolkata', hour12: false
+  })
+  item.innerHTML = `<div class="act-time">${now}</div><div>${text}</div>`
+  list.insertBefore(item, list.firstChild)
+  while (list.children.length > 15) list.removeChild(list.lastChild)
+}
+
+// ── Boot message ──────────────────────────
+setTimeout(() => {
+  addMsg('ZENITH',
+    'Online. I am Zenith, your personal AI assistant. ' +
+    'How can I help you today, sir?',
+    'agent'
+  )
+  logAct('System boot complete', true)
+}, 500)

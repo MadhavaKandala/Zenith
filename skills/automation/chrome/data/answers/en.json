@@ -1,0 +1,11 @@
+{
+  "opened": [
+    "Opening %site% for you.",
+    "Launching %site% now.",
+    "%site% is now open."
+  ],
+  "searched": [
+    "Searching for %query%.",
+    "Looking up %query% on Google."
+  ]
+}

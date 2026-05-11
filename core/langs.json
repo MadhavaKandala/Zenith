@@ -5,6 +5,30 @@
       "min_confidence": 0.5,
       "fallbacks": [
         {
+          "words": ["open youtube", "play youtube", "youtube"],
+          "package": "automation",
+          "module": "chrome",
+          "action": "open_website"
+        },
+        {
+          "words": ["open google", "go to google"],
+          "package": "automation",
+          "module": "chrome",
+          "action": "open_website"
+        },
+        {
+          "words": ["open github", "go to github"],
+          "package": "automation",
+          "module": "chrome",
+          "action": "open_website"
+        },
+        {
+          "words": ["open gmail", "check email"],
+          "package": "automation",
+          "module": "chrome",
+          "action": "open_website"
+        },
+        {
           "words": ["remind", "reminder"],
           "domain": "productivity",
           "skill": "reminders",

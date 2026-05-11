@@ -1,0 +1,37 @@
+{
+  "$schema": "../../../../schemas/skill-schemas/skill-config.json",
+  "actions": {
+    "open_website": {
+      "type": "logic",
+      "utterance_samples": [
+        "Open YouTube",
+        "Play YouTube",
+        "Open Google",
+        "Go to Google",
+        "Open GitHub",
+        "Go to GitHub",
+        "Open Gmail",
+        "Check email"
+      ]
+    },
+    "search_web": {
+      "type": "logic",
+      "utterance_samples": [
+        "Search the web for new laptops",
+        "Look up weather in Mumbai",
+        "Google quantum computing"
+      ]
+    }
+  },
+  "answers": {
+    "opened": [
+      "Opening %site% for you.",
+      "Launching %site% now.",
+      "%site% is now open."
+    ],
+    "searched": [
+      "Searching for %query%.",
+      "Looking up %query% on Google."
+    ]
+  }
+}

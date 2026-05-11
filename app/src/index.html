@@ -1,89 +1,209 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-  <meta charset="utf-8" />
-  <link rel="stylesheet" href="/css/style.css" />
-  <link rel="icon" type="image/png" href="/img/favicon.png" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
   <title>Zenith</title>
+  <link rel="icon" href="/assets/favicon.png"/>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700;900&family=Share+Tech+Mono&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="/assets/index.css"/>
 </head>
+<body>
+  <!-- Ambient background -->
+  <canvas id="bg-canvas"></canvas>
+  <div id="scanline"></div>
 
-<body class="settingup">
-  <!-- HUD Header bar -->
-  <div id="hud-header">
-    <span id="hud-title">ZENITH</span>
-    <div style="display:flex;align-items:center;gap:20px;">
-      <span id="hud-status" style="font-size:11px;letter-spacing:0.2em;color:#4A6A7A;">ONLINE</span>
-      <span id="hud-clock" style="font-size:13px;color:#4A6A7A;"></span>
-    </div>
-  </div>
+  <div id="app">
 
-  <!-- Three-panel HUD layout -->
-  <div id="hud-main">
-
-    <!-- LEFT: Orb + voice control -->
-    <div id="hud-left">
-      <div id="orb-container">
-        <div id="zenith-orb" class="idle"></div>
-        <div id="orb-label">IDLE</div>
-        <button id="zenith-mic-btn">◉ VOICE</button>
+    <!-- TOP BAR -->
+    <header id="topbar">
+      <div id="topbar-left">
+        <div id="zenith-logo">
+          <svg width="28" height="28" viewBox="0 0 28 28">
+            <circle cx="14" cy="14" r="12" fill="none" stroke="#00d4ff" stroke-width="1.5" opacity="0.6"/>
+            <circle cx="14" cy="14" r="7" fill="none" stroke="#00d4ff" stroke-width="1"/>
+            <circle cx="14" cy="14" r="3" fill="#00d4ff"/>
+            <line x1="14" y1="2" x2="14" y2="6" stroke="#00d4ff" stroke-width="1.5"/>
+            <line x1="14" y1="22" x2="14" y2="26" stroke="#00d4ff" stroke-width="1.5"/>
+            <line x1="2" y1="14" x2="6" y2="14" stroke="#00d4ff" stroke-width="1.5"/>
+            <line x1="22" y1="14" x2="26" y2="14" stroke="#00d4ff" stroke-width="1.5"/>
+          </svg>
+          <span>ZENITH</span>
+        </div>
+        <div id="topbar-divider"></div>
+        <div id="topbar-sub">PERSONAL AI ASSISTANT</div>
       </div>
-    </div>
+      <div id="topbar-center">
+        <div class="status-chip" id="chip-core">
+          <div class="chip-dot"></div>CORE ONLINE
+        </div>
+        <div class="status-chip" id="chip-ai">
+          <div class="chip-dot"></div>GEMINI ACTIVE
+        </div>
+        <div class="status-chip" id="chip-voice">
+          <div class="chip-dot inactive"></div>
+          <span id="chip-voice-text">VOICE STANDBY</span>
+        </div>
+      </div>
+      <div id="topbar-right">
+        <div id="clock-display">
+          <div id="clock-time">--:--:--</div>
+          <div id="clock-date">-- --- ----</div>
+        </div>
+      </div>
+    </header>
 
-    <!-- CENTRE: Leon chat (keep existing chat markup here) -->
-    <div id="hud-center">
-      <div id="leon-chat-root">
-        <main>
-          <div id="feed">
-            <p id="no-bubble" class="hide">
-              You can start to interact with Zenith, don't be shy.
-            </p>
+    <!-- MAIN GRID -->
+    <div id="grid">
+
+      <!-- LEFT PANEL -->
+      <aside id="left-panel">
+
+        <!-- ORB -->
+        <div id="orb-section">
+          <div id="orb-outer">
+            <svg id="orb-svg" viewBox="0 0 200 200">
+              <defs>
+                <radialGradient id="orb-grad" cx="40%" cy="35%">
+                  <stop offset="0%" stop-color="#00d4ff" stop-opacity="0.6"/>
+                  <stop offset="60%" stop-color="#0033ff" stop-opacity="0.2"/>
+                  <stop offset="100%" stop-color="#000820" stop-opacity="0"/>
+                </radialGradient>
+                <filter id="glow">
+                  <feGaussianBlur stdDeviation="4" result="blur"/>
+                  <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+                </filter>
+              </defs>
+              <!-- Outer rings -->
+              <circle id="ring3" cx="100" cy="100" r="90" fill="none" stroke="#00d4ff" stroke-width="0.5" stroke-dasharray="4 8" opacity="0.2"/>
+              <circle id="ring2" cx="100" cy="100" r="76" fill="none" stroke="#00d4ff" stroke-width="0.8" stroke-dasharray="2 12" opacity="0.3"/>
+              <circle id="ring1" cx="100" cy="100" r="62" fill="none" stroke="#00d4ff" stroke-width="1" opacity="0.4"/>
+              <!-- Core -->
+              <circle id="orb-core" cx="100" cy="100" r="48" fill="url(#orb-grad)" stroke="#00d4ff" stroke-width="1.5" filter="url(#glow)"/>
+              <!-- Inner highlight -->
+              <ellipse cx="88" cy="84" rx="16" ry="10" fill="white" opacity="0.06"/>
+              <!-- Tick marks -->
+              <g id="ticks" stroke="#00d4ff" stroke-width="0.8" opacity="0.4">
+                <line x1="100" y1="10" x2="100" y2="18"/>
+                <line x1="100" y1="182" x2="100" y2="190"/>
+                <line x1="10" y1="100" x2="18" y2="100"/>
+                <line x1="182" y1="100" x2="190" y2="100"/>
+                <line x1="29" y1="29" x2="35" y2="35"/>
+                <line x1="165" y1="165" x2="171" y2="171"/>
+                <line x1="171" y1="29" x2="165" y2="35"/>
+                <line x1="35" y1="165" x2="29" y2="171"/>
+              </g>
+            </svg>
           </div>
-          <div id="suggestions-container"></div>
-          <div id="is-typing">
-            <div class="circle"></div>
-            <div class="circle"></div>
-            <div class="circle"></div>
+          <div id="orb-label">IDLE</div>
+          <div id="orb-sub">Ready for commands</div>
+        </div>
+
+        <!-- VOICE BUTTON -->
+        <button id="voice-btn" onclick="window.handleVoice()">
+          <div id="voice-btn-inner">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
+              <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+              <line x1="12" y1="19" x2="12" y2="23"/>
+              <line x1="8" y1="23" x2="16" y2="23"/>
+            </svg>
+            <span id="voice-btn-text">ACTIVATE VOICE</span>
           </div>
-          <div id="input-container">
-            <div id="mic-container">
-              <button id="mic-button"></button>
-              <div id="sonar"></div>
+          <div id="voice-waves">
+            <div class="wave"></div>
+            <div class="wave"></div>
+            <div class="wave"></div>
+          </div>
+        </button>
+
+        <!-- QUICK COMMANDS -->
+        <div id="quick-panel">
+          <div class="panel-label">QUICK COMMANDS</div>
+          <div id="quick-grid">
+            <button class="qbtn" onclick="window.sendQuick('tell me a joke')">JOKE</button>
+            <button class="qbtn" onclick="window.sendQuick('what time is it')">TIME</button>
+            <button class="qbtn" onclick="window.sendQuick('open youtube')">YOUTUBE</button>
+            <button class="qbtn" onclick="window.sendQuick('latest news')">NEWS</button>
+            <button class="qbtn" onclick="window.sendQuick('weather in Hyderabad')">WEATHER</button>
+            <button class="qbtn" onclick="window.sendQuick('define serendipity')">DEFINE</button>
+          </div>
+        </div>
+
+      </aside>
+
+      <!-- CENTER — CHAT -->
+      <section id="chat-panel">
+        <div id="chat-header">
+          <span class="panel-label">CONVERSATION</span>
+          <button id="clear-btn" onclick="window.clearChat()">CLEAR</button>
+        </div>
+
+        <div id="messages"></div>
+
+        <div id="composer">
+          <div id="composer-inner">
+            <div id="composer-icon">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#00d4ff" stroke-width="2">
+                <polyline points="9 11 12 14 22 4"/>
+                <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
+              </svg>
             </div>
-            <label for="utterance"></label>
-            <input type="text" id="utterance" autocomplete="off" autofocus />
-            <small>
-              Use <kbd>↑</kbd> <kbd>↓</kbd> to browse history; <kbd>↵</kbd> to
-              submit;
-              <kbd>alt + c to listen.</kbd>
-            </small>
+            <input id="text-input" placeholder="Enter command or ask anything..." autocomplete="off" onkeydown="window.onKey(event)"/>
+            <button id="submit-btn" onclick="window.submitText()">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="22" y1="2" x2="11" y2="13"/>
+                <polygon points="22 2 15 22 11 13 2 9 22 2"/>
+              </svg>
+            </button>
           </div>
-        </main>
-        <footer>
-          <div id="logo"></div>
-          <div id="version">
-            <small>v</small>
-          </div>
-          <div id="discord">
-            <small class="italic">
-              <a href="https://discord.gg/" target="_blank">Join us on Discord</a>
-            </small>
-          </div>
-        </footer>
-      </div>
-    </div>
+          <div id="composer-hint">↵ Enter to send &nbsp;·&nbsp; Click ACTIVATE VOICE for voice mode</div>
+        </div>
+      </section>
 
-    <!-- RIGHT: Tool monitor -->
-    <div id="hud-right">
-      <div class="monitor-header">TOOL MONITOR</div>
-      <div id="tool-monitor-list"></div>
-    </div>
+      <!-- RIGHT PANEL -->
+      <aside id="right-panel">
 
+        <div class="panel-label">SYSTEM STATUS</div>
+        <div id="sys-grid">
+          <div class="sys-card">
+            <div class="sys-card-label">AI PROVIDER</div>
+            <div class="sys-card-val" id="sys-provider">Gemini 2.5</div>
+          </div>
+          <div class="sys-card">
+            <div class="sys-card-label">STT ENGINE</div>
+            <div class="sys-card-val">Groq Whisper</div>
+          </div>
+          <div class="sys-card">
+            <div class="sys-card-label">TTS ENGINE</div>
+            <div class="sys-card-val">Google Neural</div>
+          </div>
+          <div class="sys-card">
+            <div class="sys-card-label">VOICE</div>
+            <div class="sys-card-val" id="sys-voice">STANDBY</div>
+          </div>
+        </div>
+
+        <div class="panel-label" style="margin-top:20px">ACTIVITY LOG</div>
+        <div id="activity-list"></div>
+
+        <div class="panel-label" style="margin-top:20px">SKILLS ACTIVE</div>
+        <div id="skills-list">
+          <div class="skill-tag">REMINDERS</div>
+          <div class="skill-tag">NEWS</div>
+          <div class="skill-tag">WEATHER</div>
+          <div class="skill-tag">WIKI</div>
+          <div class="skill-tag">DICTIONARY</div>
+          <div class="skill-tag">Q&amp;A</div>
+          <div class="skill-tag">YOUTUBE</div>
+          <div class="skill-tag">CHROME</div>
+        </div>
+
+      </aside>
+
+    </div>
   </div>
 
-  <!-- KEEP ALL EXISTING SCRIPT TAGS BELOW UNCHANGED -->
-  <script type="module" src="/js/main.js"></script>
+  <script type="module" src="/assets/index.js"></script>
 </body>
-
 </html>

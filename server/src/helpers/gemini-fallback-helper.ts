@@ -21,10 +21,30 @@ declare const fetch: (
   }
 ) => Promise<FetchResponseLike>
 
+const INDIA_TIME_ZONE = 'Asia/Kolkata'
+
+function getIndiaDateTimeString(): string {
+  return new Intl.DateTimeFormat('en-IN', {
+    timeZone: INDIA_TIME_ZONE,
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: true,
+    weekday: 'long',
+    month: 'long',
+    day: '2-digit',
+    year: 'numeric'
+  }).format(new Date())
+}
+
 export async function getGeminiFallbackAnswer(
   utterance: string
 ): Promise<string> {
   const apiKey = process.env['GOOGLE_API_KEY']
+  const trimmedUtterance = utterance.trim()
+
+  if (/^(what time is it|what(?:'s| is) the time|tell me the time)$/i.test(trimmedUtterance)) {
+    return `It is ${getIndiaDateTimeString()} IST, sir.`
+  }
 
   if (!apiKey) {
     return 'I need a Google API key to answer that, sir.'
@@ -45,6 +65,8 @@ export async function getGeminiFallbackAnswer(
                     text:
                       'You are Zenith, a personal AI assistant like JARVIS from Iron Man.\n' +
                       'Be concise, helpful, and address user as "sir".\n' +
+                      `The current time is ${getIndiaDateTimeString()} IST.\n` +
+                      'You are located in India and must use IST timezone.\n' +
                       'Answer in 1-3 sentences maximum.\n\n' +
                       `User: ${utterance}`
                   }

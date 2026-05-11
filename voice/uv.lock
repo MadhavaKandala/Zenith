@@ -1299,6 +1299,9 @@ codecs = [
 deepgram = [
     { name = "livekit-plugins-deepgram" },
 ]
+elevenlabs = [
+    { name = "livekit-plugins-elevenlabs" },
+]
 groq = [
     { name = "livekit-plugins-groq" },
 ]
@@ -1374,6 +1377,18 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/91/36/6fd218b20ac323d560feb04f8436da9b212b2a3a7d7cb696032872bd4a3e/livekit_plugins_deepgram-1.5.8.tar.gz", hash = "sha256:f03943cbfee87448c9749f4737ceacb5935ae828a881970170cdbaa6bf74f3fa", size = 18034, upload-time = "2026-05-05T18:46:58.329Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/95/53/af9f12b604b1c9a0f7b8698aed6705b0107140765b350791a4bfe9e2c85b/livekit_plugins_deepgram-1.5.8-py3-none-any.whl", hash = "sha256:3c131059a9e50f73c5664f358eec523b234241b145fd1906a5966e99ea06206a", size = 22820, upload-time = "2026-05-05T18:46:56.956Z" },
+]
+
+[[package]]
+name = "livekit-plugins-elevenlabs"
+version = "1.5.8"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "livekit-agents", extra = ["codecs"] },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/89/05/3627c88c89ff5154212a33eb14021c790791743c4f85731aea610f548fec/livekit_plugins_elevenlabs-1.5.8.tar.gz", hash = "sha256:f0d11496e3d853ed631bfff9fcde76b7760b826835120971fb1f26d5d22379b6", size = 17327, upload-time = "2026-05-05T18:47:14.563Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/a8/9a/96ec5dbbe8960ae80652a6a1683a6bd68224749e6eff90c8359f37f6b3eb/livekit_plugins_elevenlabs-1.5.8-py3-none-any.whl", hash = "sha256:fe291c2e9a9500b82f2668e25f73c5924b46c006c785b3c81d3ef73ba75ea1cd", size = 19995, upload-time = "2026-05-05T18:47:12.947Z" },
 ]
 
 [[package]]
@@ -2424,6 +2439,15 @@ wheels = [
 ]
 
 [[package]]
+name = "pytz"
+version = "2026.2"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/ff/46/dd499ec9038423421951e4fad73051febaa13d2df82b4064f87af8b8c0c3/pytz-2026.2.tar.gz", hash = "sha256:0e60b47b29f21574376f218fe21abc009894a2321ea16c6754f3cad6eb7cdd6a", size = 320861, upload-time = "2026-05-04T01:35:29.667Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/ec/dd/96da98f892250475bdf2328112d7468abdd4acc7b902b6af23f4ed958ea0/pytz-2026.2-py2.py3-none-any.whl", hash = "sha256:04156e608bee23d3792fd45c94ae47fae1036688e75032eea2e3bf0323d1f126", size = 510141, upload-time = "2026-05-04T01:35:27.408Z" },
+]
+
+[[package]]
 name = "pywin32"
 version = "311"
 source = { registry = "https://pypi.org/simple" }
@@ -3116,9 +3140,10 @@ source = { editable = "." }
 dependencies = [
     { name = "fastmcp" },
     { name = "httpx" },
-    { name = "livekit-agents", extra = ["deepgram", "groq", "openai", "sarvam", "silero"] },
+    { name = "livekit-agents", extra = ["deepgram", "elevenlabs", "groq", "openai", "sarvam", "silero"] },
     { name = "livekit-plugins-google" },
     { name = "python-dotenv" },
+    { name = "pytz" },
     { name = "wikipedia" },
 ]
 
@@ -3126,9 +3151,10 @@ dependencies = [
 requires-dist = [
     { name = "fastmcp" },
     { name = "httpx" },
-    { name = "livekit-agents", extras = ["deepgram", "groq", "openai", "sarvam", "silero"], specifier = ">=1.5.1" },
+    { name = "livekit-agents", extras = ["deepgram", "elevenlabs", "groq", "openai", "sarvam", "silero"], specifier = "~=1.5" },
     { name = "livekit-plugins-google", specifier = ">=1.5.1" },
     { name = "python-dotenv" },
+    { name = "pytz", specifier = ">=2026.2" },
     { name = "wikipedia", specifier = ">=1.4.0" },
 ]
 

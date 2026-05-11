@@ -105,7 +105,7 @@ export const LANG = process.env['LEON_LANG'] as LongLanguageCode
 export const HOST = process.env['LEON_HOST']
 export const PORT = Number(process.env['LEON_PORT'])
 
-export const TIME_ZONE = process.env['LEON_TIME_ZONE']
+export const TIME_ZONE = process.env['LEON_TIME_ZONE'] || process.env['TZ']
 
 export const HAS_AFTER_SPEECH = process.env['LEON_AFTER_SPEECH'] === 'true'
 

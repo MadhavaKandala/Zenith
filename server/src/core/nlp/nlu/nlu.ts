@@ -395,31 +395,55 @@ export default class NLU {
    * according to the wished skill action
    */
   private fallback(fallbacks: Language['fallbacks']): NLUResult | null {
-    const words = this.nluResult.utterance.toLowerCase().split(' ')
+    type FallbackEntry = {
+      words: string[]
+      action: NLPAction
+      domain?: NLPDomain
+      skill?: NLPSkill
+      package?: NLPDomain
+      module?: NLPSkill
+    }
+
+    const utterance = this.nluResult.utterance.toLowerCase().trim()
+    const words = new Set(utterance.split(/\s+/).filter(Boolean))
 
     if (fallbacks.length > 0) {
       LogHelper.info('Looking for fallbacks...')
-      const tmpWords = []
 
-      for (let i = 0; i < fallbacks.length; i += 1) {
-        for (let j = 0; j < fallbacks[i]!.words.length; j += 1) {
-          if (words.includes(fallbacks[i]!.words[j] as string)) {
-            tmpWords.push(fallbacks[i]?.words[j])
+      for (const rawFallback of fallbacks as FallbackEntry[]) {
+        const hasMatch = rawFallback.words.some((rawWord) => {
+          const trigger = rawWord.toLowerCase().trim()
+
+          if (!trigger) {
+            return false
           }
+
+          if (trigger.includes(' ')) {
+            return utterance.includes(trigger)
+          }
+
+          return words.has(trigger)
+        })
+
+        if (!hasMatch) {
+          continue
         }
 
-        if (JSON.stringify(tmpWords) === JSON.stringify(fallbacks[i]?.words)) {
-          this.nluResult.entities = []
-          this.nluResult.classification.domain = fallbacks[i]
-            ?.domain as NLPDomain
-          this.nluResult.classification.skill = fallbacks[i]?.skill as NLPSkill
-          this.nluResult.classification.action = fallbacks[i]
-            ?.action as NLPAction
-          this.nluResult.classification.confidence = 1
+        const domain = rawFallback.package ?? rawFallback.domain
+        const skill = rawFallback.module ?? rawFallback.skill
 
-          LogHelper.success('Fallback found')
-          return this.nluResult
+        if (!domain || !skill) {
+          continue
         }
+
+        this.nluResult.entities = []
+        this.nluResult.classification.domain = domain
+        this.nluResult.classification.skill = skill
+        this.nluResult.classification.action = rawFallback.action
+        this.nluResult.classification.confidence = 1
+
+        LogHelper.success('Fallback found')
+        return this.nluResult
       }
     }
 

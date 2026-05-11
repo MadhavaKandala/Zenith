@@ -1,0 +1,10 @@
+{
+  "$schema": "../../../schemas/skill-schemas/skill.json",
+  "name": "Chrome",
+  "bridge": "python",
+  "version": "1.0.0",
+  "description": "Open common websites or search the web in the default browser.",
+  "author": {
+    "name": "OpenAI"
+  }
+}

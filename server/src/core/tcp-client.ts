@@ -22,6 +22,7 @@ export default class TCPClient {
   private reconnectCounter = 0
   private tcpSocket = new Net.Socket()
   private _isConnected = false
+  private isReconnectScheduled = false
 
   public readonly ee = new EventEmitter()
 
@@ -66,7 +67,7 @@ export default class TCPClient {
     this.tcpSocket.on('error', (err: NodeJS.ErrnoException) => {
       LogHelper.title('TCP Client')
 
-      if (err.code === 'ECONNREFUSED') {
+      if (err.code === 'ECONNREFUSED' || err.code === 'ECONNRESET') {
         this.reconnectCounter += 1
 
         const { type: osType } = SystemHelper.getInformation()
@@ -87,9 +88,7 @@ export default class TCPClient {
             }
           }
 
-          setTimeout(() => {
-            this.connectSocket()
-          }, INTERVAL * this.reconnectCounter)
+          this.scheduleReconnect()
         }
       } else {
         LogHelper.error(`Failed to connect to the TCP server: ${err}`)
@@ -122,9 +121,21 @@ export default class TCPClient {
   }
 
   private connectSocket(): void {
+    this.isReconnectScheduled = false
     this.tcpSocket.connect({
       host: this.host,
       port: this.port
     })
+  }
+
+  private scheduleReconnect(): void {
+    if (this.isReconnectScheduled) {
+      return
+    }
+
+    this.isReconnectScheduled = true
+    setTimeout(() => {
+      this.connectSocket()
+    }, INTERVAL * this.reconnectCounter)
   }
 }
