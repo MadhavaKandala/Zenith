@@ -155,6 +155,15 @@ def _build_llm():
     )
 
 
+def _build_vad():
+    return silero.VAD.load(
+        min_speech_duration=0.05,
+        min_silence_duration=0.35,
+        prefix_padding_duration=0.35,
+        activation_threshold=0.62,
+    )
+
+
 def _parse_job_metadata(ctx: JobContext) -> dict[str, str]:
     raw_metadata = getattr(ctx.job, "metadata", "") or ""
     if not raw_metadata:
@@ -176,9 +185,9 @@ def _build_tts(job_metadata: dict[str, str] | None = None):
     elevenlabs_key = os.getenv("ELEVENLABS_API_KEY") or os.getenv("ELEVEN_API_KEY")
     job_metadata = job_metadata or {}
     elevenlabs_voice_id = job_metadata.get("voiceId") or os.getenv(
-        "ELEVENLABS_VOICE_ID", "ErXwobaYiN019PkySvjV"
+        "ELEVENLABS_VOICE_ID", "21m00Tcm4TlvDq8ikWAM"
     )
-    elevenlabs_voice_label = job_metadata.get("voiceLabel") or "Antoni"
+    elevenlabs_voice_label = job_metadata.get("voiceLabel") or "Rachel"
 
     if elevenlabs_key:
         return (
@@ -294,7 +303,7 @@ async def entrypoint(ctx: JobContext) -> None:
         stt=_build_stt(),
         llm=_build_llm(),
         tts=tts,
-        vad=silero.VAD.load(),
+        vad=_build_vad(),
         turn_detection="vad",
         min_endpointing_delay=0.15,
         max_endpointing_delay=0.8,

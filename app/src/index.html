@@ -117,6 +117,24 @@
           </div>
         </button>
 
+        <div id="voice-control-panel">
+          <div class="panel-label">VOICE CONTROL</div>
+          <div class="voice-status-line">
+            <span>STATUS</span>
+            <strong id="voice-activity-state">STANDBY</strong>
+          </div>
+          <div class="voice-status-line">
+            <span>HEARD</span>
+            <strong id="voice-transcript-user">Waiting for speech</strong>
+          </div>
+          <div class="voice-status-line">
+            <span>REPLY</span>
+            <strong id="voice-transcript-agent">Waiting for Zenith</strong>
+          </div>
+          <button id="voice-send-btn" onclick="window.forceVoiceTurn()" disabled>ANSWER NOW</button>
+          <div id="voice-last-event">Voice session not started.</div>
+        </div>
+
         <!-- QUICK COMMANDS -->
         <div id="quick-panel">
           <div class="panel-label">QUICK COMMANDS</div>
@@ -176,7 +194,7 @@
           </div>
           <div class="sys-card">
             <div class="sys-card-label">TTS ENGINE</div>
-            <div class="sys-card-val">Google Neural</div>
+            <div class="sys-card-val">ElevenLabs</div>
           </div>
           <div class="sys-card">
             <div class="sys-card-label">VOICE</div>
