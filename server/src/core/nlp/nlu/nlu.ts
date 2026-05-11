@@ -1,7 +1,6 @@
 import { join } from 'node:path'
 import { spawn } from 'node:child_process'
 
-import axios from 'axios'
 import kill from 'tree-kill'
 
 import type { Language, ShortLanguageCode } from '@/types'
@@ -15,10 +14,11 @@ import type {
   NLUResult
 } from '@/core/nlp/types'
 import { langs } from '@@/core/langs.json'
-import { HOST, PORT, TCP_SERVER_BIN_PATH } from '@/constants'
+import { TCP_SERVER_BIN_PATH } from '@/constants'
 import { TCP_CLIENT, BRAIN, SOCKET_SERVER, MODEL_LOADER, NER } from '@/core'
 import { LogHelper } from '@/helpers/log-helper'
 import { LangHelper } from '@/helpers/lang-helper'
+import { getGeminiFallbackAnswer } from '@/helpers/gemini-fallback-helper'
 import { ActionLoop } from '@/core/nlp/nlu/action-loop'
 import { SlotFilling } from '@/core/nlp/nlu/slot-filling'
 import Conversation, { DEFAULT_ACTIVE_CONTEXT } from '@/core/nlp/conversation'
@@ -87,16 +87,7 @@ export default class NLU {
     let answer = "I'm having trouble connecting to my AI systems, sir."
 
     try {
-      const { data } = await axios.post<{ answer?: string }>(
-        `${HOST || 'http://localhost'}:${PORT || 1337}/api/gemini-fallback`,
-        { utterance },
-        {
-          headers: { 'Content-Type': 'application/json' },
-          timeout: 20_000
-        }
-      )
-
-      answer = data.answer || answer
+      answer = await getGeminiFallbackAnswer(utterance)
     } catch (error) {
       LogHelper.error(`Gemini fallback failed: ${error}`)
     }

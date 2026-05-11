@@ -1,4 +1,25 @@
-import axios from 'axios'
+interface GeminiGenerateContentResponse {
+  candidates?: Array<{
+    content?: {
+      parts?: Array<{
+        text?: string
+      }>
+    }
+  }>
+}
+
+interface FetchResponseLike {
+  json(): Promise<GeminiGenerateContentResponse>
+}
+
+declare const fetch: (
+  input: string,
+  init?: {
+    method?: string
+    headers?: Record<string, string>
+    body?: string
+  }
+) => Promise<FetchResponseLike>
 
 export async function getGeminiFallbackAnswer(
   utterance: string
@@ -10,28 +31,36 @@ export async function getGeminiFallbackAnswer(
   }
 
   try {
-    const { data } = await axios.post(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`,
-      {
-        contents: [
-          {
-            parts: [
+    const geminiRes = await Promise.race<FetchResponseLike>([
+      fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            contents: [
               {
-                text:
-                  'You are Zenith, a personal AI assistant like JARVIS from Iron Man.\n' +
-                  'Be concise, helpful, and address user as "sir".\n' +
-                  'Answer in 1-3 sentences maximum.\n\n' +
-                  `User: ${utterance}`
+                parts: [
+                  {
+                    text:
+                      'You are Zenith, a personal AI assistant like JARVIS from Iron Man.\n' +
+                      'Be concise, helpful, and address user as "sir".\n' +
+                      'Answer in 1-3 sentences maximum.\n\n' +
+                      `User: ${utterance}`
+                  }
+                ]
               }
             ]
-          }
-        ]
-      },
-      {
-        headers: { 'Content-Type': 'application/json' },
-        timeout: 20_000
-      }
-    )
+          })
+        },
+      ),
+      new Promise<never>((_resolve, reject) => {
+        setTimeout(() => {
+          reject(new Error('Gemini fallback timed out'))
+        }, 20_000)
+      })
+    ])
+    const data = (await geminiRes.json()) as GeminiGenerateContentResponse
 
     return (
       data?.candidates?.[0]?.content?.parts?.[0]?.text ||

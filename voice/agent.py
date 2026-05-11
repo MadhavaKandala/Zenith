@@ -1,44 +1,111 @@
 import logging
 import os
+import json
+import subprocess
+import webbrowser
 from pathlib import Path
 from typing import get_args
 
 from dotenv import load_dotenv
 from livekit.agents import JobContext, WorkerOptions, cli
-from livekit.agents.llm import ChatMessage, mcp
+from livekit.agents.llm import ChatMessage, mcp, function_tool
 from livekit.agents.voice import Agent, AgentSession
 from livekit.agents.voice.events import EventTypes
 from livekit.plugins import google as lk_google, groq as lk_groq, silero
 
+ROOT_ENV_PATH = Path(__file__).resolve().parents[1] / ".env"
+load_dotenv(dotenv_path=ROOT_ENV_PATH)
+
 STT_PROVIDER = "groq_whisper"
 LLM_PROVIDER = "gemini"
 TTS_PROVIDER = "google_cloud"
-
 GROQ_STT_MODEL = "whisper-large-v3-turbo"
 GEMINI_LLM_MODEL = "gemini-2.5-flash"
 GOOGLE_TTS_VOICE = "en-US-Neural2-D"
 MCP_SERVER_PORT = 8000
 
-SYSTEM_PROMPT = (
-    "You are Zenith, a personal AI assistant in the style of JARVIS from Iron Man. "
-    "Be concise, helpful, and address the user as sir."
-)
-
-ROOT_ENV_PATH = Path(__file__).resolve().parents[1] / ".env"
-load_dotenv(dotenv_path=ROOT_ENV_PATH)
+SYSTEM_PROMPT = """You are Zenith, a personal AI assistant in the 
+style of JARVIS from Iron Man. Be concise, helpful, and address 
+the user as sir. You have the ability to open websites and 
+applications. When the user asks to open something, use the 
+open_application tool. Keep responses under 3 sentences for 
+voice output."""
 
 logger = logging.getLogger("zenith-agent")
 logger.setLevel(logging.INFO)
 
 
+@function_tool
+async def open_application(url_or_app: str) -> str:
+    """Open a website or application on the user's computer.
+    
+    Args:
+        url_or_app: The URL or application name to open.
+                   Examples: 'youtube', 'github', 'gmail', 
+                   'https://youtube.com'
+    """
+    sites = {
+        "youtube": "https://www.youtube.com",
+        "github": "https://www.github.com",
+        "gmail": "https://mail.google.com",
+        "google": "https://www.google.com",
+        "maps": "https://maps.google.com",
+        "stackoverflow": "https://stackoverflow.com",
+        "netflix": "https://www.netflix.com",
+        "spotify": "https://open.spotify.com",
+        "twitter": "https://www.twitter.com",
+        "instagram": "https://www.instagram.com",
+        "whatsapp": "https://web.whatsapp.com",
+        "linkedin": "https://www.linkedin.com",
+    }
+
+    target = url_or_app.lower().strip()
+    
+    # Check known sites
+    for name, url in sites.items():
+        if name in target:
+            webbrowser.open(url)
+            return f"Opening {name.capitalize()} for you, sir."
+    
+    # If it looks like a URL already
+    if target.startswith("http"):
+        webbrowser.open(target)
+        return f"Opening {target} for you, sir."
+    
+    # Search Google for anything else
+    search_url = f"https://www.google.com/search?q={url_or_app}"
+    webbrowser.open(search_url)
+    return f"Searching for {url_or_app} on Google, sir."
+
+
+@function_tool  
+async def get_current_time() -> str:
+    """Get the current date and time."""
+    from datetime import datetime
+    now = datetime.now()
+    return now.strftime("It is %I:%M %p on %A, %B %d, %Y, sir.")
+
+
+@function_tool
+async def search_wikipedia(query: str) -> str:
+    """Search Wikipedia for information about a topic.
+    
+    Args:
+        query: The topic to search for
+    """
+    try:
+        import wikipedia
+        result = wikipedia.summary(query, sentences=2)
+        return result
+    except Exception as e:
+        return f"I could not find information about {query}, sir."
+
+
 def _mcp_server_url() -> str:
-    url = f"http://127.0.0.1:{MCP_SERVER_PORT}/sse"
-    logger.info("MCP Server URL: %s", url)
-    return url
+    return f"http://127.0.0.1:{MCP_SERVER_PORT}/sse"
 
 
-def _build_stt() -> lk_groq.STT:
-    logger.info("STT -> Groq Whisper (%s)", GROQ_STT_MODEL)
+def _build_stt():
     return lk_groq.STT(
         model=GROQ_STT_MODEL,
         api_key=os.getenv("GROQ_API_KEY"),
@@ -46,16 +113,14 @@ def _build_stt() -> lk_groq.STT:
     )
 
 
-def _build_llm() -> lk_google.LLM:
-    logger.info("LLM -> Google Gemini (%s)", GEMINI_LLM_MODEL)
+def _build_llm():
     return lk_google.LLM(
         model=GEMINI_LLM_MODEL,
         api_key=os.getenv("GOOGLE_API_KEY"),
     )
 
 
-def _build_tts() -> lk_google.TTS:
-    logger.info("TTS -> Google Cloud TTS (%s)", GOOGLE_TTS_VOICE)
+def _build_tts():
     return lk_google.TTS(
         language="en-US",
         voice_name=GOOGLE_TTS_VOICE,
@@ -65,122 +130,74 @@ def _build_tts() -> lk_google.TTS:
 
 
 def _extract_message_text(message: ChatMessage) -> str:
-    parts: list[str] = []
-
+    parts = []
     for item in message.content:
         if isinstance(item, str):
             parts.append(item)
-            continue
-
-        text = getattr(item, "text", None)
-        if isinstance(text, str) and text.strip():
-            parts.append(text)
-            continue
-
-        if isinstance(item, dict):
-            dict_text = item.get("text")
-            if isinstance(dict_text, str) and dict_text.strip():
-                parts.append(dict_text)
-
-    return " ".join(part.strip() for part in parts if part and part.strip())
+        else:
+            text = getattr(item, "text", None)
+            if isinstance(text, str) and text.strip():
+                parts.append(text)
+    return " ".join(p.strip() for p in parts if p and p.strip())
 
 
 class ZenithAgent(Agent):
     def __init__(self) -> None:
         super().__init__(
             instructions=SYSTEM_PROMPT,
-            mcp_servers=[
-                mcp.MCPServerHTTP(
-                    url=_mcp_server_url(),
-                    transport_type="sse",
-                    client_session_timeout_seconds=30,
-                ),
+            tools=[
+                open_application,
+                get_current_time,
+                search_wikipedia,
             ],
         )
 
 
-def _turn_detection() -> str:
-    return "vad"
-
-
-def _endpointing_delay() -> float:
-    return 0.3
-
-
-def _register_session_debug_handlers(session: AgentSession) -> None:
-    available_session_events = list(get_args(EventTypes))
-    print("Available session events:", available_session_events)
-
-    @session.on("user_input_transcribed")
-    def on_user_input_transcribed(event) -> None:
-        if event.is_final and event.transcript.strip():
-            print(f"USER SAID: {event.transcript.strip()}")
-
-    @session.on("conversation_item_added")
-    def on_conversation_item_added(event) -> None:
-        item = event.item
-        if getattr(item, "role", None) != "assistant":
-            return
-
-        agent_text = _extract_message_text(item)
-        if agent_text:
-            print(f"ZENITH SAID: {agent_text}")
-
-    @session.on("user_state_changed")
-    def on_user_state_changed(event) -> None:
-        logger.info("User state: %s -> %s", event.old_state, event.new_state)
-
-    @session.on("agent_state_changed")
-    def on_agent_state_changed(event) -> None:
-        logger.info("Agent state: %s -> %s", event.old_state, event.new_state)
-
-    @session.on("error")
-    def on_session_error(event) -> None:
-        logger.error("Session error from %s: %s", type(event.source).__name__, event.error)
-
-
 async def entrypoint(ctx: JobContext) -> None:
-    logger.info(
-        "Zenith online - room: %s | STT=%s | LLM=%s | TTS=%s",
-        ctx.room.name,
-        STT_PROVIDER,
-        LLM_PROVIDER,
-        TTS_PROVIDER,
-    )
+    logger.info("Zenith online - room: %s", ctx.room.name)
 
     session = AgentSession(
         stt=_build_stt(),
         llm=_build_llm(),
         tts=_build_tts(),
         vad=silero.VAD.load(),
-        turn_detection=_turn_detection(),
-        min_endpointing_delay=_endpointing_delay(),
+        turn_detection="vad",
+        min_endpointing_delay=0.3,
     )
-    _register_session_debug_handlers(session)
+
+    @session.on("user_input_transcribed")
+    def on_user_input(event):
+        if event.is_final and event.transcript.strip():
+            print(f"\n>>> USER: {event.transcript.strip()}")
+
+    @session.on("conversation_item_added")
+    def on_agent_response(event):
+        if getattr(event.item, "role", None) == "assistant":
+            text = _extract_message_text(event.item)
+            if text:
+                print(f"<<< ZENITH: {text}\n")
+
+    @session.on("agent_state_changed")
+    def on_state_change(event):
+        logger.info("Agent: %s → %s", event.old_state, event.new_state)
+
+    @session.on("error")
+    def on_error(event):
+        logger.error("Error: %s", event.error)
 
     await session.start(agent=ZenithAgent(), room=ctx.room)
     await session.say(
-        "Hello sir. I am Zenith, your personal AI assistant. How can I help you?",
+        "Online. I am Zenith, your personal AI assistant. "
+        "How can I help you today, sir?",
         allow_interruptions=True,
     )
 
 
 def main() -> None:
-    cli.run_app(
-        WorkerOptions(
-            entrypoint_fnc=entrypoint,
-            agent_name="zenith",
-        )
-    )
-
-
-def dev() -> None:
-    import sys
-
-    if len(sys.argv) == 1:
-        sys.argv.append("dev")
-
-    main()
+    cli.run_app(WorkerOptions(
+        entrypoint_fnc=entrypoint,
+        agent_name="zenith",
+    ))
 
 
 if __name__ == "__main__":

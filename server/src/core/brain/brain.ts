@@ -32,6 +32,7 @@ import { LangHelper } from '@/helpers/lang-helper'
 import { LogHelper } from '@/helpers/log-helper'
 import { SkillDomainHelper } from '@/helpers/skill-domain-helper'
 import { StringHelper } from '@/helpers/string-helper'
+import { getGeminiFallbackAnswer } from '@/helpers/gemini-fallback-helper'
 import Synchronizer from '@/core/synchronizer'
 
 export default class Brain {
@@ -157,13 +158,23 @@ export default class Brain {
     )
   }
 
-  private handleAskToRepeat(nluResult: NLUResult): void {
-    if (!this.isMuted) {
-      const speech = `${this.wernicke('random_not_sure')}.`
+  private async handleAskToRepeat(nluResult: NLUResult): Promise<string> {
+    let speech = `${this.wernicke('random_not_sure')}.`
 
-      this.talk(speech, true)
-      SOCKET_SERVER.socket?.emit('ask-to-repeat', nluResult)
+    if (nluResult.utterance.trim() !== '') {
+      try {
+        speech = await getGeminiFallbackAnswer(nluResult.utterance)
+      } catch (error) {
+        LogHelper.error(`Gemini fallback failed: ${error}`)
+      }
     }
+
+    if (!this.isMuted) {
+      this.talk(speech, true)
+      SOCKET_SERVER.socket?.emit('is-typing', false)
+    }
+
+    return speech
   }
 
   /**
@@ -328,13 +339,13 @@ export default class Brain {
 
       // Ask to repeat if Leon is not sure about the request
       if (this.shouldAskToRepeat(nluResult)) {
-        this.handleAskToRepeat(nluResult)
+        const speech = await this.handleAskToRepeat(nluResult)
 
         const executionTimeEnd = Date.now()
         const executionTime = executionTimeEnd - executionTimeStart
 
         resolve({
-          speeches,
+          speeches: [speech],
           executionTime
         })
       } else {
