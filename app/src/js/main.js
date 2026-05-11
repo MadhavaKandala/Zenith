@@ -1,8 +1,9 @@
 import { io } from 'socket.io-client'
-import { toggleVoice } from './voice.js'
+import { forceVoiceTurn, toggleVoice } from './voice.js'
 
 // ── Globals ──────────────────────────────
 window.handleVoice = toggleVoice
+window.forceVoiceTurn = forceVoiceTurn
 window.sendQuick = (text) => {
   document.getElementById('text-input').value = text
   window.submitText()

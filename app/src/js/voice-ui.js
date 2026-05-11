@@ -1,14 +1,11 @@
 import { setOrbState } from './orb.js'
 
 const VOICE_STORAGE_KEY = 'zenith.voicePreset'
+const VOICE_STORAGE_VERSION_KEY = 'zenith.voicePresetVersion'
+const VOICE_STORAGE_VERSION = '2'
 const MAX_VOICE_HISTORY_ITEMS = 14
 
 const VOICE_PRESETS = [
-  {
-    id: 'ErXwobaYiN019PkySvjV',
-    label: 'Antoni',
-    note: 'Crisp male voice, good for command responses and fast tool confirmations.'
-  },
   {
     id: '21m00Tcm4TlvDq8ikWAM',
     label: 'Rachel',
@@ -28,6 +25,11 @@ const VOICE_PRESETS = [
     id: 'TxGEqnHWrfWFTfGW9XjX',
     label: 'Josh',
     note: 'Deeper male voice with a steadier command-center feel.'
+  },
+  {
+    id: 'ErXwobaYiN019PkySvjV',
+    label: 'Antoni',
+    note: 'Crisp male voice, good for command responses and fast tool confirmations.'
   }
 ]
 
@@ -44,6 +46,12 @@ function formatLabel(value) {
 
 function getStoredVoiceId() {
   try {
+    if (window.localStorage.getItem(VOICE_STORAGE_VERSION_KEY) !== VOICE_STORAGE_VERSION) {
+      window.localStorage.removeItem(VOICE_STORAGE_KEY)
+      window.localStorage.setItem(VOICE_STORAGE_VERSION_KEY, VOICE_STORAGE_VERSION)
+      return null
+    }
+
     return window.localStorage.getItem(VOICE_STORAGE_KEY)
   } catch {
     return null
@@ -138,6 +146,28 @@ export function setVoiceConnectionState(state) {
   }
 
   document.body.dataset.voiceConnection = String(state || 'offline').toLowerCase()
+  const forceTurnBtn = byId('voice-send-btn')
+  if (forceTurnBtn) {
+    forceTurnBtn.disabled = !['connected', 'reconnecting'].includes(
+      String(state || 'offline').toLowerCase()
+    )
+  }
+}
+
+export function setForceTurnButtonState(mode) {
+  const button = byId('voice-send-btn')
+  if (!button) return
+
+  if (mode === 'paused') {
+    button.textContent = 'RESUME MIC'
+    button.disabled = false
+    button.classList.add('paused')
+    return
+  }
+
+  button.textContent = 'ANSWER NOW'
+  button.classList.remove('paused')
+  button.disabled = mode === 'disabled'
 }
 
 export function setVoiceStatus(state, detail) {
@@ -149,7 +179,7 @@ export function setVoiceStatus(state, detail) {
 
   setOrbState(safeState)
   if (status) status.textContent = formatted
-  if (activity) activity.textContent = formatted
+  if (activity) activity.textContent = formatted.toUpperCase()
   if (detailNode && detail) detailNode.textContent = detail
 
   document.body.dataset.voiceState = safeState.toLowerCase()
@@ -166,6 +196,19 @@ export function setLastVoiceEvent(message) {
   const node = byId('voice-last-event')
   if (node) {
     node.textContent = message
+  }
+
+  const list = byId('activity-list')
+  if (list && message) {
+    const item = document.createElement('div')
+    item.className = 'act-item'
+    const now = new Date().toLocaleTimeString('en-IN', {
+      timeZone: 'Asia/Kolkata',
+      hour12: false
+    })
+    item.innerHTML = `<div class="act-time">${now}</div><div>${message}</div>`
+    list.insertBefore(item, list.firstChild)
+    while (list.children.length > 15) list.removeChild(list.lastChild)
   }
 }
 
@@ -196,12 +239,27 @@ export function updateTranscript(role, text) {
   const node = role === 'user' ? byId('voice-transcript-user') : byId('voice-transcript-agent')
   if (node) {
     node.textContent = text
+    node.title = text
   }
 }
 
 export function addVoiceHistory(title, body) {
   const history = byId('voice-history')
-  if (!history) return
+  if (!history) {
+    const list = byId('activity-list')
+    if (!list) return
+
+    const item = document.createElement('div')
+    item.className = 'act-item highlight'
+    const now = new Date().toLocaleTimeString('en-IN', {
+      timeZone: 'Asia/Kolkata',
+      hour12: false
+    })
+    item.innerHTML = `<div class="act-time">${now}</div><div>${title}: ${body}</div>`
+    list.insertBefore(item, list.firstChild)
+    while (list.children.length > 15) list.removeChild(list.lastChild)
+    return
+  }
 
   const item = document.createElement('div')
   item.className = 'voice-history-item'
@@ -226,7 +284,22 @@ export function appendVoiceBubble(role, text) {
   const feed = byId('feed')
   const noBubbleMessage = byId('no-bubble')
 
-  if (!feed || !text) return
+  if (!text) return
+
+  if (!feed) {
+    const messages = byId('messages')
+    if (!messages) return
+
+    const row = document.createElement('div')
+    row.className = `msg-row ${role === 'user' ? 'user' : 'agent'}`
+    row.innerHTML = `
+      <div class="msg-sender">${role === 'user' ? 'YOU' : 'ZENITH'}</div>
+      <div class="msg-bubble">${text}</div>
+    `
+    messages.appendChild(row)
+    messages.scrollTop = messages.scrollHeight
+    return
+  }
 
   const container = document.createElement('div')
   const bubble = document.createElement('p')

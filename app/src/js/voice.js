@@ -4,6 +4,7 @@ import {
   addVoiceHistory,
   appendVoiceBubble,
   getSelectedVoicePreset,
+  setForceTurnButtonState,
   setLastVoiceEvent,
   setMicButtonState,
   setVoiceConnectionState,
@@ -15,10 +16,20 @@ import {
 
 let room = null
 let isConnected = false
+let isConnecting = false
+let isMicPausedForAnswer = false
 let renderedTranscriptIds = new Set()
+let answerTimeout = null
+let voiceSessionId = 0
+
+const micOptions = {
+  noiseSuppression: true,
+  echoCancellation: true,
+  autoGainControl: true
+}
 
 export async function toggleVoice() {
-  if (isConnected) {
+  if (isConnected || isConnecting || room) {
     await disconnectVoice()
     return
   }
@@ -26,7 +37,55 @@ export async function toggleVoice() {
   await connectVoice()
 }
 
+export async function forceVoiceTurn() {
+  if (!room || !isConnected) {
+    setLastVoiceEvent('Start voice before using Answer Now.')
+    return
+  }
+
+  if (isMicPausedForAnswer) {
+    await resumeMic('Mic resumed. Zenith is listening again.')
+    return
+  }
+
+  window.clearTimeout(answerTimeout)
+  isMicPausedForAnswer = true
+  setForceTurnButtonState('paused')
+  setVoiceStatus('thinking', 'Mic paused. Zenith should answer from the last captured speech.')
+  setLastVoiceEvent('Answer Now pressed. Mic is paused until Zenith responds.')
+  addVoiceHistory('Answer Now', 'Mic paused to force a final turn boundary in a noisy room.')
+
+  try {
+    await room.localParticipant.setMicrophoneEnabled(false)
+    answerTimeout = window.setTimeout(() => {
+      if (isMicPausedForAnswer) {
+        setLastVoiceEvent('Still waiting for Zenith. If this persists, LiveKit or the voice worker is disconnected.')
+      }
+    }, 12000)
+  } catch (error) {
+    console.error('Answer Now failed:', error)
+    isMicPausedForAnswer = false
+    setForceTurnButtonState('ready')
+    setLastVoiceEvent('Answer Now failed. Reconnect voice and try again.')
+  }
+}
+
+async function resumeMic(message = 'Mic reopened. Zenith is ready for your next command.') {
+  if (!room || !isConnected) return
+
+  window.clearTimeout(answerTimeout)
+  answerTimeout = null
+  isMicPausedForAnswer = false
+  setForceTurnButtonState('ready')
+  await room.localParticipant.setMicrophoneEnabled(true, micOptions)
+  setVoiceStatus('listening', message)
+  setLastVoiceEvent(message)
+}
+
 async function connectVoice() {
+  const sessionId = voiceSessionId + 1
+  voiceSessionId = sessionId
+  isConnecting = true
   syncVoicePresetUi()
   const preset = getSelectedVoicePreset()
 
@@ -56,6 +115,9 @@ async function connectVoice() {
     if (!LK?.Room) {
       throw new Error('LiveKit client failed to load')
     }
+    if (sessionId !== voiceSessionId) {
+      return
+    }
 
     renderedTranscriptIds = new Set()
     updateTranscript('user', 'Your spoken words will appear here as Zenith hears them.')
@@ -74,6 +136,11 @@ async function connectVoice() {
     attachRoomHandlers(room, preset)
 
     await room.connect(url, token)
+    if (sessionId !== voiceSessionId) {
+      await room.disconnect()
+      return
+    }
+    isConnecting = false
     setVoiceConnectionState('connected')
     setLastVoiceEvent(`Connected to ${roomName}. Unlocking browser audio.`)
 
@@ -81,19 +148,17 @@ async function connectVoice() {
       console.warn('Initial startAudio failed:', error)
     })
 
-    await room.localParticipant.setMicrophoneEnabled(true, {
-      noiseSuppression: true,
-      echoCancellation: true,
-      autoGainControl: true
-    })
+    await room.localParticipant.setMicrophoneEnabled(true, micOptions)
 
     isConnected = true
+    setForceTurnButtonState('ready')
     setVoiceStatus(
       'listening',
       `Live voice is active. Speak naturally and Zenith will answer with ${preset.label}.`
     )
     addVoiceHistory('Session live', `${roomName} connected. Microphone streaming to Zenith.`)
   } catch (error) {
+    isConnecting = false
     console.error('Voice connect error:', error)
     setVoiceConnectionState('offline')
     setVoiceStatus(
@@ -114,6 +179,8 @@ async function connectVoice() {
       room = null
     }
     isConnected = false
+    isMicPausedForAnswer = false
+    setForceTurnButtonState('disabled')
   }
 }
 
@@ -123,12 +190,16 @@ function attachRoomHandlers(activeRoom, preset) {
     setVoiceConnectionState(normalized)
 
     if (normalized === 'connected') {
-      setVoiceStatus(
-        'listening',
-        `Room connected. Zenith is listening and will answer with ${preset.label}.`
-      )
+      if (!isMicPausedForAnswer) {
+        setVoiceStatus(
+          'listening',
+          `Room connected. Zenith is listening and will answer with ${preset.label}.`
+        )
+      }
+      setForceTurnButtonState(isMicPausedForAnswer ? 'paused' : 'ready')
     } else if (normalized === 'reconnecting') {
       setVoiceStatus('connecting', 'LiveKit is reconnecting the session.')
+      setForceTurnButtonState('disabled')
     }
 
     setLastVoiceEvent(`Room state changed to ${normalized}.`)
@@ -185,6 +256,8 @@ function attachRoomHandlers(activeRoom, preset) {
       await activeRoom.startAudio()
       await audioEl.play()
       setVoiceStatus('speaking', `Zenith is speaking now with the ${preset.label} preset.`)
+      isMicPausedForAnswer = false
+      setForceTurnButtonState('disabled')
       setLastVoiceEvent(`Remote audio track attached from ${participant.identity}.`)
       addVoiceHistory('Audio online', `Receiving Zenith audio from ${participant.identity}.`)
     } catch (error) {
@@ -200,7 +273,9 @@ function attachRoomHandlers(activeRoom, preset) {
   activeRoom.on(LK.RoomEvent.TrackUnsubscribed, (track, _publication, participant) => {
     if (track.kind === LK.Track.Kind.Audio && !participant.isLocal) {
       track.detach().forEach((element) => element.remove())
-      setVoiceStatus('listening', 'Zenith finished speaking and is ready for your next command.')
+      resumeMic('Zenith finished speaking. Mic reopened for your next command.').catch((error) => {
+        console.error('Mic resume after speech failed:', error)
+      })
       setLastVoiceEvent(`Remote audio track removed for ${participant.identity}.`)
     }
   })
@@ -211,6 +286,11 @@ function attachRoomHandlers(activeRoom, preset) {
 
     if (remoteSpeaking) {
       setVoiceStatus('speaking', `Zenith is delivering the reply with ${preset.label}.`)
+      return
+    }
+
+    if (isMicPausedForAnswer) {
+      setVoiceStatus('thinking', 'Mic is paused. Waiting for Zenith to answer.')
       return
     }
 
@@ -231,6 +311,9 @@ function attachRoomHandlers(activeRoom, preset) {
 
   activeRoom.on(LK.RoomEvent.Disconnected, () => {
     isConnected = false
+    isConnecting = false
+    isMicPausedForAnswer = false
+    setForceTurnButtonState('disabled')
     setMicButtonState(false)
     setVoiceConnectionState('offline')
     setVoiceStatus('idle', 'Voice session closed. Press start voice to reconnect.')
@@ -280,25 +363,42 @@ function handleTranscriptSegments(segments, participant) {
   addVoiceHistory(isUser ? 'You said' : 'Zenith replied', finalText)
 
   if (isUser) {
+    if (isMicPausedForAnswer) {
+      setLastVoiceEvent('Final speech captured. Zenith is preparing the answer.')
+    }
     setVoiceStatus('thinking', 'Command captured. Zenith is preparing a reply.')
   } else {
+    isMicPausedForAnswer = false
+    setForceTurnButtonState('disabled')
     setVoiceStatus('speaking', 'Zenith is voicing the response now.')
   }
 }
 
 function clearAttachedAudio() {
+  window.clearTimeout(answerTimeout)
+  answerTimeout = null
+  isMicPausedForAnswer = false
+  setForceTurnButtonState('disabled')
   document.querySelectorAll('[data-zenith-audio="true"]').forEach((element) => {
     element.remove()
   })
 }
 
 async function disconnectVoice() {
-  if (room) {
-    await room.disconnect()
-    return
+  voiceSessionId += 1
+  const activeRoom = room
+  isConnected = false
+  isConnecting = false
+
+  if (activeRoom) {
+    try {
+      await activeRoom.localParticipant.setMicrophoneEnabled(false)
+    } catch {
+      // Ignore mic shutdown failures while the room is already closing.
+    }
+    await activeRoom.disconnect()
   }
 
-  isConnected = false
   clearAttachedAudio()
   setMicButtonState(false)
   setVoiceConnectionState('offline')
@@ -306,4 +406,5 @@ async function disconnectVoice() {
   setVoiceRoom('Awaiting session')
   setLastVoiceEvent('Voice session ended by the user.')
   addVoiceHistory('Session ended', 'Voice session closed manually from the control deck.')
+  room = null
 }
