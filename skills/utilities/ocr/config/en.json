@@ -1,0 +1,38 @@
+{
+  "actions": {
+    "read_text": {
+      "utterance_samples": [
+        "read the text in this image",
+        "extract text from the screenshot",
+        "what does this image say",
+        "OCR this image",
+        "read text on screen",
+        "scan this document",
+        "read the text from this picture"
+      ],
+      "answers": {
+        "text_found": "Here is the text I found: %text%",
+        "no_text": "I couldn't detect any text in that image, sir.",
+        "no_path": "Please specify an image file to read, sir.",
+        "file_not_found": "I can't find that file, sir.",
+        "ocr_unavailable": "OCR engine is not available on this system, sir.",
+        "error": "An error occurred during text extraction, sir."
+      }
+    },
+    "screenshot_text": {
+      "utterance_samples": [
+        "read my screen",
+        "what's on my screen",
+        "capture and read screen text",
+        "scan my display",
+        "what text is visible on screen"
+      ],
+      "answers": {
+        "screen_text": "Here's what I can read on your screen: %text%",
+        "no_screen_text": "I couldn't detect any text on your screen, sir.",
+        "ocr_unavailable": "OCR engine is not available on this system, sir.",
+        "error": "Screen reading failed, sir."
+      }
+    }
+  }
+}

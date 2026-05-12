@@ -23,6 +23,7 @@ import { keyMidd } from '@/core/http-server/plugins/key'
 import { NLU, BRAIN } from '@/core'
 
 const API_VERSION = 'v1'
+const LIVEKIT_DISPATCH_TIMEOUT_MS = 12_000
 
 export interface APIOptions {
   apiVersion: string
@@ -36,6 +37,28 @@ const postQuerySchema = {
 
 interface PostQuerySchema {
   body: Static<typeof postQuerySchema.body>
+}
+
+function withTimeout<T>(
+  promise: Promise<T>,
+  timeoutMs: number,
+  label: string
+): Promise<T> {
+  return new Promise((resolve, reject) => {
+    const timeout = setTimeout(() => {
+      reject(new Error(`${label} timed out after ${timeoutMs}ms`))
+    }, timeoutMs)
+
+    promise
+      .then((value) => {
+        clearTimeout(timeout)
+        resolve(value)
+      })
+      .catch((error) => {
+        clearTimeout(timeout)
+        reject(error)
+      })
+  })
 }
 
 export default class HTTPServer {
@@ -128,13 +151,17 @@ export default class HTTPServer {
           apiSecret
         )
 
-        await dispatchClient.createDispatch(roomName, 'zenith', {
-          metadata: JSON.stringify({
-            source: 'zenith-webapp',
-            voiceId,
-            voiceLabel
-          })
-        })
+        await withTimeout(
+          dispatchClient.createDispatch(roomName, 'zenith', {
+            metadata: JSON.stringify({
+              source: 'zenith-webapp',
+              voiceId,
+              voiceLabel
+            })
+          }),
+          LIVEKIT_DISPATCH_TIMEOUT_MS,
+          'LiveKit dispatch'
+        )
 
         const at = new AccessToken(apiKey, apiSecret, {
           identity: 'zenith-user-' + Date.now(),

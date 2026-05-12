@@ -15,6 +15,7 @@ import {
 import { LogHelper } from '@/helpers/log-helper'
 import { LangHelper } from '@/helpers/lang-helper'
 import { Telemetry } from '@/telemetry'
+import { RateLimiter } from '@/core/rate-limiter'
 
 interface HotwordDataEvent {
   hotword: string
@@ -28,6 +29,7 @@ interface UtteranceDataEvent {
 
 export default class SocketServer {
   private static instance: SocketServer
+  private rateLimiter: RateLimiter
 
   public socket: Socket<DefaultEventsMap, DefaultEventsMap> | undefined =
     undefined
@@ -37,6 +39,7 @@ export default class SocketServer {
       LogHelper.title('Socket Server')
       LogHelper.success('New instance')
 
+      this.rateLimiter = new RateLimiter(30, 60_000, 30_000)
       SocketServer.instance = this
     }
   }
@@ -108,6 +111,24 @@ export default class SocketServer {
           this.socket?.on('utterance', async (data: UtteranceDataEvent) => {
             LogHelper.title('Socket')
             LogHelper.info(`${data.client} emitted: ${data.value}`)
+
+            // Rate limiting check
+            const clientId = this.socket?.id || data.client
+            const rateCheck = this.rateLimiter.check(clientId)
+            if (!rateCheck.allowed) {
+              LogHelper.warning(
+                `Rate limit exceeded for client ${clientId}. Retry after ${rateCheck.retryAfterMs}ms`
+              )
+              this.socket?.emit('is-typing', false)
+              this.socket?.emit('answer', {
+                key: 'rate_limit',
+                data: {
+                  speech: 'You are sending requests too quickly, sir. Please wait a moment.',
+                  retryAfterMs: rateCheck.retryAfterMs
+                }
+              })
+              return
+            }
 
             this.socket?.emit('is-typing', true)
 

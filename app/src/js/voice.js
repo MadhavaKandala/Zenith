@@ -3,7 +3,9 @@ import * as LK from 'livekit-client'
 import {
   addVoiceHistory,
   appendVoiceBubble,
+  clearComposerVoiceTranscript,
   getSelectedVoicePreset,
+  setComposerVoiceTranscript,
   setForceTurnButtonState,
   setLastVoiceEvent,
   setMicButtonState,
@@ -120,6 +122,7 @@ async function connectVoice() {
     }
 
     renderedTranscriptIds = new Set()
+    clearComposerVoiceTranscript()
     updateTranscript('user', 'Your spoken words will appear here as Zenith hears them.')
     updateTranscript(
       'agent',
@@ -159,21 +162,14 @@ async function connectVoice() {
     addVoiceHistory('Session live', `${roomName} connected. Microphone streaming to Zenith.`)
   } catch (error) {
     isConnecting = false
+    const errorMessage = getVoiceConnectErrorMessage(error)
     console.error('Voice connect error:', error)
     setVoiceConnectionState('offline')
-    setVoiceStatus(
-      'idle',
-      'Voice connection failed. Restart the voice worker if the problem persists.'
-    )
+    setVoiceStatus('idle', errorMessage)
     setMicButtonState(false)
     setVoiceRoom('Awaiting session')
-    setLastVoiceEvent(
-      `Voice connection failed: ${error instanceof Error ? error.message : String(error)}`
-    )
-    addVoiceHistory(
-      'Voice error',
-      error instanceof Error ? error.message : 'Unknown voice connection error.'
-    )
+    setLastVoiceEvent(`Voice connection failed: ${errorMessage}`)
+    addVoiceHistory('Voice error', errorMessage)
     if (room) {
       await room.disconnect()
       room = null
@@ -182,6 +178,29 @@ async function connectVoice() {
     isMicPausedForAnswer = false
     setForceTurnButtonState('disabled')
   }
+}
+
+function getVoiceConnectErrorMessage(error) {
+  const rawMessage = error instanceof Error ? error.message : String(error)
+  const normalized = rawMessage.toLowerCase()
+
+  if (normalized.includes('notallowed') || normalized.includes('permission denied')) {
+    return 'Microphone permission denied. Allow microphone access for localhost, then start voice again.'
+  }
+
+  if (normalized.includes('notfound') || normalized.includes('requested device not found')) {
+    return 'No microphone was found. Connect or enable a microphone, then start voice again.'
+  }
+
+  if (normalized.includes('token fetch failed')) {
+    return 'LiveKit token request failed. Check the Zenith server and LiveKit environment settings.'
+  }
+
+  if (normalized.includes('failed to fetch')) {
+    return 'Voice token request failed. Check that the Zenith server is running and LiveKit is reachable.'
+  }
+
+  return rawMessage || 'Unknown voice connection error.'
 }
 
 function attachRoomHandlers(activeRoom, preset) {
@@ -336,6 +355,9 @@ function handleTranscriptSegments(segments, participant) {
 
   const isUser = participant?.isLocal ?? false
   updateTranscript(isUser ? 'user' : 'agent', text)
+  if (isUser) {
+    setComposerVoiceTranscript(text)
+  }
   setLastVoiceEvent(
     isUser ? 'Your speech is being transcribed in real time.' : 'Zenith response transcript updated.',
     { persist: false }
@@ -364,6 +386,7 @@ function handleTranscriptSegments(segments, participant) {
   addVoiceHistory(isUser ? 'You said' : 'Zenith replied', finalText)
 
   if (isUser) {
+    setComposerVoiceTranscript(finalText, { final: true })
     if (isMicPausedForAnswer) {
       setLastVoiceEvent('Final speech captured. Zenith is preparing the answer.')
     }
@@ -401,6 +424,7 @@ async function disconnectVoice() {
   }
 
   clearAttachedAudio()
+  clearComposerVoiceTranscript()
   setMicButtonState(false)
   setVoiceConnectionState('offline')
   setVoiceStatus('idle', 'Voice session ended. Press start voice to reconnect Zenith.')

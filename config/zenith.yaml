@@ -43,8 +43,43 @@ memory:
   db_type: "tinydb"                 # tinydb | sqlite
   db_path: "~/.zenith/zenith.db"
   chat_history_limit: 100
+  knowledge_vault: true             # enable long-term fact storage
+  per_skill_storage: true           # enable per-skill namespaced storage
+
+vision:
+  ocr:
+    enabled: true
+    engine: "tesseract"             # tesseract
+    language: "eng"
+    tesseract_cmd: "${TESSERACT_CMD}"  # optional: path to tesseract binary
+  face_auth:
+    enabled: true
+    engine: "lbph"                  # LBPH (Local Binary Patterns Histograms)
+    confidence_threshold: 80.0      # lower = stricter match
+    model_dir: "~/.zenith/face_models"
+  object_detection:
+    enabled: true
+    engine: "yolov8n"               # YOLOv8 nano model
+    confidence_threshold: 0.5
+
+desktop:
+  automation:
+    enabled: true
+    engine: "pyautogui"
+    failsafe: true                  # move mouse to corner to abort
+    pause: 0.1                      # delay between actions (seconds)
+  screenshots_dir: "~/.zenith/screenshots"
+
+browser:
+  automation:
+    enabled: true
+    engine: "playwright"            # playwright chromium
+    headless: true
+
+rate_limiting:
+  max_requests_per_minute: 30       # utterances per client per minute
+  block_duration_seconds: 30        # block duration after limit exceeded
 
 ui:
   theme: "stark"                    # stark | minimal | neon
   port: 1337
-

@@ -191,6 +191,39 @@ export function updateTranscript(role, text) {
   }
 }
 
+export function setComposerVoiceTranscript(text, options = {}) {
+  const input = byId('text-input')
+  if (!input || !text) return
+
+  const { final = false } = options
+  const hasManualText = input.value.trim() && input.dataset.voiceDraft !== 'true'
+  const isManualEntryActive = document.activeElement === input && hasManualText
+  if (isManualEntryActive) return
+
+  input.value = text
+  input.title = text
+  input.dataset.voiceDraft = 'true'
+
+  if (final) {
+    window.setTimeout(() => {
+      if (input.dataset.voiceDraft === 'true' && input.value === text) {
+        input.value = ''
+        input.title = ''
+        delete input.dataset.voiceDraft
+      }
+    }, 1800)
+  }
+}
+
+export function clearComposerVoiceTranscript() {
+  const input = byId('text-input')
+  if (!input || input.dataset.voiceDraft !== 'true') return
+
+  input.value = ''
+  input.title = ''
+  delete input.dataset.voiceDraft
+}
+
 export function addVoiceHistory(title, body) {
   prependActivity(`${title}: ${body}`, true)
 }

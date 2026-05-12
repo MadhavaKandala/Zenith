@@ -1,0 +1,43 @@
+{
+  "name": "Desktop Control",
+  "bridge": "python",
+  "version": "1.0.0",
+  "description": "Control desktop applications, mouse, keyboard, and screen capture via PyAutoGUI",
+  "author": {
+    "name": "Madhava Kandala"
+  },
+  "actions": {
+    "take_screenshot": {
+      "type": "logic",
+      "utterance_samples": [
+        "take a screenshot",
+        "capture my screen",
+        "screenshot",
+        "grab screen"
+      ]
+    },
+    "open_app": {
+      "type": "logic",
+      "utterance_samples": [
+        "open notepad",
+        "launch calculator",
+        "start chrome",
+        "open file manager"
+      ],
+      "entities": [
+        {
+          "entity": "application",
+          "type": "trim"
+        }
+      ]
+    },
+    "type_text": {
+      "type": "logic",
+      "utterance_samples": [
+        "type this text",
+        "write this for me",
+        "input the following"
+      ]
+    }
+  }
+}

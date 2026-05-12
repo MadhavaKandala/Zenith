@@ -158,9 +158,9 @@ def _build_llm():
 def _build_vad():
     return silero.VAD.load(
         min_speech_duration=0.05,
-        min_silence_duration=0.35,
-        prefix_padding_duration=0.35,
-        activation_threshold=0.62,
+        min_silence_duration=0.2,
+        prefix_padding_duration=0.2,
+        activation_threshold=0.55,
     )
 
 
@@ -305,8 +305,8 @@ async def entrypoint(ctx: JobContext) -> None:
         tts=tts,
         vad=_build_vad(),
         turn_detection="vad",
-        min_endpointing_delay=0.15,
-        max_endpointing_delay=0.8,
+        min_endpointing_delay=0.05,
+        max_endpointing_delay=0.35,
     )
 
     _register_session_debug_handlers(session)

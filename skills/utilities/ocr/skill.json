@@ -1,0 +1,29 @@
+{
+  "name": "OCR",
+  "bridge": "python",
+  "version": "1.0.0",
+  "description": "Extract text from images and screenshots using Tesseract OCR",
+  "author": {
+    "name": "Madhava Kandala"
+  },
+  "actions": {
+    "read_text": {
+      "type": "logic",
+      "utterance_samples": [
+        "read the text in this image",
+        "extract text from the screenshot",
+        "what does this image say",
+        "OCR this image",
+        "read text on screen"
+      ]
+    },
+    "screenshot_text": {
+      "type": "logic",
+      "utterance_samples": [
+        "read my screen",
+        "what's on my screen",
+        "capture and read screen text"
+      ]
+    }
+  }
+}

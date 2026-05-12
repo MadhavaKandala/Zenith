@@ -1,0 +1,95 @@
+#!/usr/bin/env python
+# -*- coding:utf-8 -*-
+
+"""
+Desktop Control Skill — Automate desktop actions via PyAutoGUI.
+
+Actions:
+  - take_screenshot: Capture the current screen
+  - open_app: Open an application by name
+  - type_text: Type text using keyboard simulation
+"""
+
+import sys
+import os
+
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..', '..', '..', '..'))
+
+from core.desktop.controller import DesktopController
+
+_ctrl = None
+
+
+def _get_controller():
+    """Lazy-initialize the desktop controller singleton."""
+    global _ctrl
+    if _ctrl is None:
+        _ctrl = DesktopController()
+    return _ctrl
+
+
+def take_screenshot(params):
+    """Capture the current screen and save it."""
+    ctrl = _get_controller()
+
+    try:
+        filepath = ctrl.take_screenshot()
+        return print(f'{{"key": "screenshot_taken", "data": {{"speech": "Screenshot captured and saved, sir.", "filepath": "{filepath}"}}}}')
+    except RuntimeError as e:
+        return print(f'{{"key": "unavailable", "data": {{"speech": "Desktop control is not available: {str(e)}"}}}}')
+    except Exception as e:
+        return print(f'{{"key": "error", "data": {{"speech": "Failed to take screenshot, sir: {str(e)}"}}}}')
+
+
+def open_app(params):
+    """Open an application by name."""
+    ctrl = _get_controller()
+
+    # Extract application name from entities or utterance
+    entities = params.get('entities', [])
+    app_name = None
+
+    for entity in entities:
+        if entity.get('entity') == 'application':
+            app_name = entity.get('sourceText', entity.get('resolution', {}).get('value'))
+            break
+
+    if not app_name:
+        utterance = params.get('utterance', '')
+        # Try to extract app name from common patterns
+        import re
+        match = re.search(r'(?:open|launch|start)\s+(.+)', utterance, re.IGNORECASE)
+        if match:
+            app_name = match.group(1).strip()
+
+    if not app_name:
+        return print('{"key": "no_app", "data": {"speech": "Which application would you like me to open, sir?"}}')
+
+    try:
+        success = ctrl.open_application(app_name)
+        if success:
+            return print(f'{{"key": "app_opened", "data": {{"speech": "Opening {app_name} for you, sir."}}}}')
+        else:
+            return print(f'{{"key": "app_failed", "data": {{"speech": "I was unable to open {app_name}, sir."}}}}')
+    except RuntimeError as e:
+        return print(f'{{"key": "unavailable", "data": {{"speech": "Desktop control is not available: {str(e)}"}}}}')
+
+
+def type_text(params):
+    """Type text using keyboard simulation."""
+    ctrl = _get_controller()
+
+    utterance = params.get('utterance', '')
+    # Extract the text to type from the utterance
+    import re
+    match = re.search(r'(?:type|write|input)\s+(.+)', utterance, re.IGNORECASE)
+    text_to_type = match.group(1).strip() if match else utterance
+
+    if not text_to_type:
+        return print('{"key": "no_text", "data": {"speech": "What would you like me to type, sir?"}}')
+
+    try:
+        ctrl.type_text(text_to_type)
+        return print(f'{{"key": "text_typed", "data": {{"speech": "Done typing, sir."}}}}')
+    except RuntimeError as e:
+        return print(f'{{"key": "unavailable", "data": {{"speech": "Desktop control is not available: {str(e)}"}}}}')

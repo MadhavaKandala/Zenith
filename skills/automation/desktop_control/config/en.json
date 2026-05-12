@@ -1,0 +1,44 @@
+{
+  "actions": {
+    "take_screenshot": {
+      "utterance_samples": [
+        "take a screenshot",
+        "capture my screen",
+        "screenshot please",
+        "grab my screen"
+      ],
+      "answers": {
+        "screenshot_taken": "Screenshot captured and saved, sir.",
+        "unavailable": "Desktop control is not available on this system, sir.",
+        "error": "Failed to take screenshot, sir."
+      }
+    },
+    "open_app": {
+      "utterance_samples": [
+        "open notepad",
+        "launch calculator",
+        "start chrome",
+        "open file manager",
+        "run paint"
+      ],
+      "answers": {
+        "app_opened": "Opening %app% for you, sir.",
+        "app_failed": "I was unable to open %app%, sir.",
+        "no_app": "Which application would you like me to open, sir?",
+        "unavailable": "Desktop control is not available on this system, sir."
+      }
+    },
+    "type_text": {
+      "utterance_samples": [
+        "type hello world",
+        "write this for me",
+        "input the following text"
+      ],
+      "answers": {
+        "text_typed": "Done typing, sir.",
+        "no_text": "What would you like me to type, sir?",
+        "unavailable": "Desktop control is not available on this system, sir."
+      }
+    }
+  }
+}
