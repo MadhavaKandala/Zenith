@@ -473,13 +473,6 @@ This project is designed to score strongly against typical AI project evaluation
 | Reliability | Uses multi-provider fallback instead of a single AI dependency |
 | Presentation quality | Uses proposal-style sections for easier review and scoring |
 
----
-
-## Reference Positioning
-
-The referenced `hackerxhari/nexus` project is useful as a documentation benchmark because it frames the project around why it exists, what it solves, how it works, and what is trusted or bounded. ZENITH follows that same documentation principle, but the actual implementation and scope are specific to this repository.
-
-ZENITH is not a copy of the reference project. The reference is used only as a presentation and proposal-quality guide. This project focuses on a local-first voice AI assistant with skills, tools, provider fallback, and desktop execution.
 
 ---
 
