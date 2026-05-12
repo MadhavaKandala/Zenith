@@ -3,7 +3,7 @@ import { setOrbState } from './orb.js'
 const VOICE_STORAGE_KEY = 'zenith.voicePreset'
 const VOICE_STORAGE_VERSION_KEY = 'zenith.voicePresetVersion'
 const VOICE_STORAGE_VERSION = '2'
-const MAX_VOICE_HISTORY_ITEMS = 14
+let lastVoiceEventMessage = ''
 
 const VOICE_PRESETS = [
   {
@@ -66,85 +66,19 @@ function storeVoiceId(id) {
   }
 }
 
-export function getVoicePresets() {
-  return VOICE_PRESETS.slice()
-}
-
 export function getSelectedVoicePreset() {
   const storedId = getStoredVoiceId()
   const preset = VOICE_PRESETS.find((item) => item.id === storedId)
   return preset || VOICE_PRESETS[0]
 }
 
-export function initVoiceUi() {
-  const selector = byId('voice-selector')
-  if (!selector || selector.dataset.ready === 'true') {
-    syncVoicePresetUi()
-    return
-  }
-
-  const fragment = document.createDocumentFragment()
-  for (const preset of VOICE_PRESETS) {
-    const option = document.createElement('option')
-    option.value = preset.id
-    option.textContent = preset.label
-    fragment.appendChild(option)
-  }
-
-  selector.replaceChildren(fragment)
-  selector.dataset.ready = 'true'
-  selector.addEventListener('change', () => {
-    storeVoiceId(selector.value)
-    const preset = getSelectedVoicePreset()
-    renderVoicePreset(preset)
-    addVoiceHistory(
-      'Voice preset updated',
-      `${preset.label} selected. Reconnect voice to apply the new ElevenLabs speaker.`
-    )
-  })
-
-  syncVoicePresetUi()
-  setVoiceConnectionState('offline')
-  setVoiceStatus(
-    'idle',
-    'Press start voice to create a LiveKit room and route speech through Zenith.'
-  )
-  setLastVoiceEvent('Standing by for a voice session.')
-}
-
 export function syncVoicePresetUi() {
   const preset = getSelectedVoicePreset()
-  const selector = byId('voice-selector')
-  if (selector && selector.value !== preset.id) {
-    selector.value = preset.id
-  }
-  renderVoicePreset(preset)
-}
-
-function renderVoicePreset(preset) {
-  const note = byId('voice-voice-note')
-  const currentVoice = byId('voice-telemetry-voice')
-  if (note) {
-    note.textContent = `${preset.label} is active. ${preset.note}`
-  }
-  if (currentVoice) {
-    currentVoice.textContent = preset.label
-  }
+  storeVoiceId(preset.id)
+  return preset
 }
 
 export function setVoiceConnectionState(state) {
-  const formatted = formatLabel(state || 'offline')
-  const tag = byId('voice-connection-state')
-  const connection = byId('voice-telemetry-connection')
-  const pill = byId('voice-mode-pill')
-
-  if (tag) tag.textContent = formatted
-  if (connection) connection.textContent = formatted
-  if (pill) {
-    pill.textContent =
-      formatted.toLowerCase() === 'connected' ? 'VOICE LIVE' : `VOICE ${formatted.toUpperCase()}`
-  }
-
   document.body.dataset.voiceConnection = String(state || 'offline').toLowerCase()
   const forceTurnBtn = byId('voice-send-btn')
   if (forceTurnBtn) {
@@ -172,44 +106,58 @@ export function setForceTurnButtonState(mode) {
 
 export function setVoiceStatus(state, detail) {
   const safeState = state || 'idle'
-  const formatted = formatLabel(safeState)
-  const status = byId('voice-telemetry-state')
   const activity = byId('voice-activity-state')
-  const detailNode = byId('voice-status-detail')
 
   setOrbState(safeState)
-  if (status) status.textContent = formatted
-  if (activity) activity.textContent = formatted.toUpperCase()
-  if (detailNode && detail) detailNode.textContent = detail
+  if (activity) activity.textContent = formatLabel(safeState).toUpperCase()
+  if (detail) {
+    const eventNode = byId('voice-last-event')
+    if (eventNode && !eventNode.textContent) {
+      eventNode.textContent = detail
+    }
+  }
 
   document.body.dataset.voiceState = safeState.toLowerCase()
 }
 
-export function setVoiceRoom(roomName) {
-  const roomNode = byId('voice-telemetry-room')
-  if (roomNode) {
-    roomNode.textContent = roomName || 'Awaiting session'
+export function setVoiceRoom(_roomName) {}
+
+function prependActivity(message, highlight = false) {
+  const list = byId('activity-list')
+  if (!list || !message) return
+
+  const item = document.createElement('div')
+  item.className = 'act-item' + (highlight ? ' highlight' : '')
+
+  const timeNode = document.createElement('div')
+  timeNode.className = 'act-time'
+  timeNode.textContent = new Date().toLocaleTimeString('en-IN', {
+    timeZone: 'Asia/Kolkata',
+    hour12: false
+  })
+
+  const textNode = document.createElement('div')
+  textNode.textContent = message
+  item.append(timeNode, textNode)
+  list.insertBefore(item, list.firstChild)
+
+  while (list.children.length > 15) {
+    list.removeChild(list.lastChild)
   }
 }
 
-export function setLastVoiceEvent(message) {
+export function setLastVoiceEvent(message, options = {}) {
+  const { persist = true } = options
   const node = byId('voice-last-event')
   if (node) {
     node.textContent = message
   }
 
-  const list = byId('activity-list')
-  if (list && message) {
-    const item = document.createElement('div')
-    item.className = 'act-item'
-    const now = new Date().toLocaleTimeString('en-IN', {
-      timeZone: 'Asia/Kolkata',
-      hour12: false
-    })
-    item.innerHTML = `<div class="act-time">${now}</div><div>${message}</div>`
-    list.insertBefore(item, list.firstChild)
-    while (list.children.length > 15) list.removeChild(list.lastChild)
+  if (persist && message && message !== lastVoiceEventMessage) {
+    prependActivity(message)
   }
+
+  lastVoiceEventMessage = message
 }
 
 export function setMicButtonState(active) {
@@ -244,76 +192,24 @@ export function updateTranscript(role, text) {
 }
 
 export function addVoiceHistory(title, body) {
-  const history = byId('voice-history')
-  if (!history) {
-    const list = byId('activity-list')
-    if (!list) return
-
-    const item = document.createElement('div')
-    item.className = 'act-item highlight'
-    const now = new Date().toLocaleTimeString('en-IN', {
-      timeZone: 'Asia/Kolkata',
-      hour12: false
-    })
-    item.innerHTML = `<div class="act-time">${now}</div><div>${title}: ${body}</div>`
-    list.insertBefore(item, list.firstChild)
-    while (list.children.length > 15) list.removeChild(list.lastChild)
-    return
-  }
-
-  const item = document.createElement('div')
-  item.className = 'voice-history-item'
-
-  const titleNode = document.createElement('span')
-  titleNode.className = 'voice-history-title'
-  titleNode.textContent = title
-
-  const bodyNode = document.createElement('p')
-  bodyNode.className = 'voice-history-body'
-  bodyNode.textContent = body
-
-  item.append(titleNode, bodyNode)
-  history.prepend(item)
-
-  while (history.children.length > MAX_VOICE_HISTORY_ITEMS) {
-    history.removeChild(history.lastChild)
-  }
+  prependActivity(`${title}: ${body}`, true)
 }
 
 export function appendVoiceBubble(role, text) {
-  const feed = byId('feed')
-  const noBubbleMessage = byId('no-bubble')
-
   if (!text) return
 
-  if (!feed) {
-    const messages = byId('messages')
-    if (!messages) return
+  const messages = byId('messages')
+  if (!messages) return
 
-    const row = document.createElement('div')
-    row.className = `msg-row ${role === 'user' ? 'user' : 'agent'}`
-    row.innerHTML = `
-      <div class="msg-sender">${role === 'user' ? 'YOU' : 'ZENITH'}</div>
-      <div class="msg-bubble">${text}</div>
-    `
-    messages.appendChild(row)
-    messages.scrollTop = messages.scrollHeight
-    return
-  }
-
-  const container = document.createElement('div')
-  const bubble = document.createElement('p')
-
-  container.className = `bubble-container ${role === 'user' ? 'me' : 'leon'}`
-  bubble.className = 'bubble'
+  const row = document.createElement('div')
+  row.className = `msg-row ${role === 'user' ? 'user' : 'agent'}`
+  const sender = document.createElement('div')
+  sender.className = 'msg-sender'
+  sender.textContent = role === 'user' ? 'YOU' : 'ZENITH'
+  const bubble = document.createElement('div')
+  bubble.className = 'msg-bubble'
   bubble.textContent = text
-
-  container.appendChild(bubble)
-  feed.appendChild(container)
-
-  if (noBubbleMessage && !noBubbleMessage.classList.contains('hide')) {
-    noBubbleMessage.classList.add('hide')
-  }
-
-  feed.scrollTo({ top: feed.scrollHeight, behavior: 'smooth' })
+  row.append(sender, bubble)
+  messages.appendChild(row)
+  messages.scrollTop = messages.scrollHeight
 }

@@ -1,5 +1,15 @@
 import { VERSION } from './version'
 
-console.log('[WIP] Node.js bridge', VERSION)
+function formatStatusLine(label: string, value: string): string {
+  return `${label}: ${value}`
+}
 
-// TODO
+function printBridgeSummary(): void {
+  console.log('[Zenith] Node.js bridge')
+  console.log(formatStatusLine('version', VERSION))
+  console.log(formatStatusLine('runtime', process.version))
+  console.log(formatStatusLine('status', 'ready'))
+  console.log('This bridge is reserved for future Node-side extensions.')
+}
+
+printBridgeSummary()

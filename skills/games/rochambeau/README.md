@@ -1,34 +1,14 @@
-from time import time
+# Rochambeau
 
-import utils
+Domain: Games
 
-# Skill database
-db = utils.db()['db']
+This skill belongs to the Zenith modular skill system.
+It is triggered through trained intent models and executed through the Python bridge runtime.
 
-# Game table
-game_table = db.table('game')
+Typical files in this directory:
+- src or action files for runtime logic
+- data for answers, entities, or language assets
+- config.sample.json for optional setup examples
 
-# Time stamp
-timestamp = int(time())
+This README was restored to documentation form during repository cleanup.
 
-def create_new_game(nb_to_guess):
-	"""Add new game"""
-
-	game_table.insert({
-		'nb': nb_to_guess,
-		'counter': 0,
-		'created_at': timestamp
-	})
-
-def get_new_game():
-	"""Get the newly created game"""
-
-	return game_table.all()[-1]
-
-def set_counter(counter):
-	"""Set new trial counter value"""
-
-	last_record_id = get_new_game().doc_id
-	game_table.update({
-		'counter': counter
-	}, doc_ids=[last_record_id])
