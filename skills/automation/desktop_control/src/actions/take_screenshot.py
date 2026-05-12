@@ -12,6 +12,7 @@ Actions:
 
 import sys
 import os
+import json
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..', '..', '..', '..'))
 
@@ -28,17 +29,26 @@ def _get_controller():
     return _ctrl
 
 
+def _print_json(key, speech, **kwargs):
+    data = {"speech": speech}
+    data.update(kwargs)
+    print(json.dumps({"key": key, "data": data}))
+
+
 def take_screenshot(params):
     """Capture the current screen and save it."""
     ctrl = _get_controller()
 
     try:
-        filepath = ctrl.take_screenshot()
-        return print(f'{{"key": "screenshot_taken", "data": {{"speech": "Screenshot captured and saved, sir.", "filepath": "{filepath}"}}}}')
+        filename = params.get('filename')
+        if filename:
+            filename = os.path.basename(filename)
+        filepath = ctrl.take_screenshot(filename=filename)
+        return _print_json("screenshot_taken", "Screenshot captured and saved, sir.", filepath=filepath)
     except RuntimeError as e:
-        return print(f'{{"key": "unavailable", "data": {{"speech": "Desktop control is not available: {str(e)}"}}}}')
+        return _print_json("unavailable", f"Desktop control is not available: {str(e)}")
     except Exception as e:
-        return print(f'{{"key": "error", "data": {{"speech": "Failed to take screenshot, sir: {str(e)}"}}}}')
+        return _print_json("error", f"Failed to take screenshot, sir: {str(e)}")
 
 
 def open_app(params):
@@ -63,16 +73,16 @@ def open_app(params):
             app_name = match.group(1).strip()
 
     if not app_name:
-        return print('{"key": "no_app", "data": {"speech": "Which application would you like me to open, sir?"}}')
+        return _print_json("no_app", "Which application would you like me to open, sir?")
 
     try:
         success = ctrl.open_application(app_name)
         if success:
-            return print(f'{{"key": "app_opened", "data": {{"speech": "Opening {app_name} for you, sir."}}}}')
+            return _print_json("app_opened", f"Opening {app_name} for you, sir.")
         else:
-            return print(f'{{"key": "app_failed", "data": {{"speech": "I was unable to open {app_name}, sir."}}}}')
+            return _print_json("app_failed", f"I was unable to open {app_name}, sir.")
     except RuntimeError as e:
-        return print(f'{{"key": "unavailable", "data": {{"speech": "Desktop control is not available: {str(e)}"}}}}')
+        return _print_json("unavailable", f"Desktop control is not available: {str(e)}")
 
 
 def type_text(params):
@@ -86,10 +96,10 @@ def type_text(params):
     text_to_type = match.group(1).strip() if match else utterance
 
     if not text_to_type:
-        return print('{"key": "no_text", "data": {"speech": "What would you like me to type, sir?"}}')
+        return _print_json("no_text", "What would you like me to type, sir?")
 
     try:
         ctrl.type_text(text_to_type)
-        return print(f'{{"key": "text_typed", "data": {{"speech": "Done typing, sir."}}}}')
+        return _print_json("text_typed", "Done typing, sir.")
     except RuntimeError as e:
-        return print(f'{{"key": "unavailable", "data": {{"speech": "Desktop control is not available: {str(e)}"}}}}')
+        return _print_json("unavailable", f"Desktop control is not available: {str(e)}")

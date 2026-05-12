@@ -25,8 +25,6 @@ logger = logging.getLogger("zenith.desktop.controller")
 try:
     import pyautogui
 
-    pyautogui.FAILSAFE = True  # Move mouse to top-left corner to abort
-    pyautogui.PAUSE = 0.1  # Small delay between actions for safety
     _PYAUTOGUI_AVAILABLE = True
 except ImportError:
     _PYAUTOGUI_AVAILABLE = False
@@ -52,8 +50,16 @@ class DesktopController:
         self.safety_enabled = safety_enabled
 
         if self.available:
+            self._old_failsafe = getattr(pyautogui, "FAILSAFE", True)
+            self._old_pause = getattr(pyautogui, "PAUSE", 0.1)
             pyautogui.FAILSAFE = safety_enabled
+            pyautogui.PAUSE = 0.1
             Path(self.SCREENSHOTS_DIR).mkdir(parents=True, exist_ok=True)
+
+    def __del__(self):
+        if getattr(self, "available", False):
+            pyautogui.FAILSAFE = getattr(self, "_old_failsafe", True)
+            pyautogui.PAUSE = getattr(self, "_old_pause", 0.1)
 
         logger.info(
             "Desktop controller initialized (available=%s, safety=%s)",
@@ -182,7 +188,10 @@ class DesktopController:
                 return location.x, location.y
             return None
         except Exception as exc:
-            logger.error("Image locate failed: %s", exc)
+            if "opencv" in str(exc).lower() or isinstance(exc, ImportError):
+                logger.error("opencv-python is required for confidence-based matching. Install with: pip install opencv-python")
+            else:
+                logger.error("Image locate failed: %s", exc)
             return None
 
     # ── Window Management ──────────────────────────────────────────────
@@ -214,11 +223,16 @@ class DesktopController:
 
         try:
             if sys.platform == "win32":
-                subprocess.Popen(["start", name], shell=True)
+                os.startfile(name)
             elif sys.platform == "darwin":
                 subprocess.Popen(["open", "-a", name])
             else:
-                subprocess.Popen([name])
+                import shutil
+                if shutil.which(name):
+                    subprocess.Popen([name])
+                else:
+                    logger.error("Application %s not found on PATH", name)
+                    return False
 
             logger.info("Opened application: %s", name)
             return True
@@ -226,22 +240,27 @@ class DesktopController:
             logger.error("Failed to open %s: %s", name, exc)
             return False
 
+    @property
+    def _modifier(self) -> str:
+        import sys
+        return "command" if sys.platform == "darwin" else "ctrl"
+
     def copy_to_clipboard(self) -> None:
         """Copy the current selection to clipboard (Ctrl+C)."""
-        self.hotkey("ctrl", "c")
+        self.hotkey(self._modifier, "c")
 
     def paste_from_clipboard(self) -> None:
         """Paste from clipboard (Ctrl+V)."""
-        self.hotkey("ctrl", "v")
+        self.hotkey(self._modifier, "v")
 
     def select_all(self) -> None:
         """Select all content (Ctrl+A)."""
-        self.hotkey("ctrl", "a")
+        self.hotkey(self._modifier, "a")
 
     def undo(self) -> None:
         """Undo last action (Ctrl+Z)."""
-        self.hotkey("ctrl", "z")
+        self.hotkey(self._modifier, "z")
 
     def save(self) -> None:
         """Save current document (Ctrl+S)."""
-        self.hotkey("ctrl", "s")
+        self.hotkey(self._modifier, "s")

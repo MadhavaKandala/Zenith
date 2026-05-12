@@ -70,11 +70,14 @@ class ObjectDetector:
         self.available = _YOLO_AVAILABLE
         self.confidence_threshold = confidence_threshold
         self._model = None
+        self._model_path = model_path or self.DEFAULT_MODEL
 
-        if self.available:
+    def _load_model(self) -> None:
+        """Lazily load the YOLO model."""
+        if self._model is None and self.available:
             try:
-                self._model = YOLO(model_path or self.DEFAULT_MODEL)
-                logger.info("YOLOv8 model loaded: %s", model_path or self.DEFAULT_MODEL)
+                self._model = YOLO(self._model_path)
+                logger.info("YOLOv8 model loaded: %s", self._model_path)
             except Exception as exc:
                 logger.error("Failed to load YOLO model: %s", exc)
                 self.available = False
@@ -89,8 +92,13 @@ class ObjectDetector:
         Returns:
             List of DetectionResult objects.
         """
-        if not self.available or self._model is None:
+        if not self.available:
             raise RuntimeError("YOLO model is not available.")
+
+        if self._model is None:
+            self._load_model()
+            if not self.available or self._model is None:
+                raise RuntimeError("YOLO model could not be loaded.")
 
         image_path = Path(image_path)
         if not image_path.is_file():

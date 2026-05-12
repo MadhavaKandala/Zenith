@@ -60,12 +60,18 @@ class FaceAuthenticator:
 
         if self.available:
             self.model_dir.mkdir(parents=True, exist_ok=True)
-            self._recognizer = cv2.face.LBPHFaceRecognizer_create(
-                radius=1, neighbors=8, grid_x=8, grid_y=8
-            )
-            cascade_path = cv2.data.haarcascades + "haarcascade_frontalface_default.xml"
-            self._face_cascade = cv2.CascadeClassifier(cascade_path)
-            self._load_model()
+            try:
+                self._recognizer = cv2.face.LBPHFaceRecognizer_create(
+                    radius=1, neighbors=8, grid_x=8, grid_y=8
+                )
+                cascade_path = cv2.data.haarcascades + "haarcascade_frontalface_default.xml"
+                self._face_cascade = cv2.CascadeClassifier(cascade_path)
+                if self._face_cascade.empty():
+                    raise RuntimeError(f"Failed to load cascade classifier from {cascade_path}")
+                self._load_model()
+            except Exception as exc:
+                logger.error("Failed to initialize CV2 face components: %s", exc)
+                self.available = False
 
         logger.info(
             "Face authenticator initialized (available=%s, threshold=%.1f)",
@@ -244,11 +250,14 @@ class FaceAuthenticator:
         if not self.available:
             raise RuntimeError("OpenCV is not available.")
 
-        cap = cv2.VideoCapture(camera_index)
         try:
+            cap = cv2.VideoCapture(camera_index)
             if not cap.isOpened():
                 logger.error("Cannot open camera %d", camera_index)
                 return False, 999.0, "camera_error"
+        except Exception as exc:
+            logger.error("Failed to initialize video capture: %s", exc)
+            return False, 999.0, "camera_error"
 
             ret, frame = cap.read()
             if not ret:

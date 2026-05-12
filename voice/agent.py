@@ -157,10 +157,10 @@ def _build_llm():
 
 def _build_vad():
     return silero.VAD.load(
-        min_speech_duration=0.05,
-        min_silence_duration=0.2,
+        min_speech_duration=0.1,
+        min_silence_duration=1.5,
         prefix_padding_duration=0.2,
-        activation_threshold=0.55,
+        activation_threshold=0.6,
     )
 
 

@@ -104,12 +104,17 @@ def validate_config(config: dict[str, Any]) -> list[str]:
         for key in schema.get("required", []):
             if key not in section_data:
                 errors.append(f"Missing required key: '{section_name}.{key}'")
-            elif key in schema.get("types", {}):
+
+        for key, value in section_data.items():
+            if key in schema.get("types", {}):
                 expected_type = schema["types"][key]
-                if not isinstance(section_data[key], expected_type):
+                if not isinstance(value, expected_type):
+                    type_name = expected_type.__name__ if hasattr(expected_type, '__name__') else (
+                        " or ".join(t.__name__ for t in expected_type) if isinstance(expected_type, tuple) else str(expected_type)
+                    )
                     errors.append(
                         f"Invalid type for '{section_name}.{key}': "
-                        f"expected {expected_type.__name__}, got {type(section_data[key]).__name__}"
+                        f"expected {type_name}, got {type(value).__name__}"
                     )
 
     # Validate optional sections (soft checks)
@@ -131,6 +136,24 @@ def validate_config(config: dict[str, Any]) -> list[str]:
         for key in schema.get("required", []):
             if key not in section_data:
                 errors.append(f"Missing key in optional section: '{section_name}.{key}'")
+        
+        for key, value in section_data.items():
+            expected_type = None
+            if key in schema.get("types", {}):
+                expected_type = schema["types"][key]
+            elif "type" in schema.get("properties", {}).get(key, {}):
+                json_type = schema["properties"][key]["type"]
+                type_map = {"string": str, "integer": int, "number": (int, float), "boolean": bool, "array": list, "object": dict}
+                expected_type = type_map.get(json_type)
+            
+            if expected_type and not isinstance(value, expected_type):
+                type_name = expected_type.__name__ if hasattr(expected_type, '__name__') else (
+                    " or ".join(t.__name__ for t in expected_type) if isinstance(expected_type, tuple) else str(expected_type)
+                )
+                errors.append(
+                    f"Invalid type for '{section_name}.{key}': "
+                    f"expected {type_name}, got {type(value).__name__}"
+                )
 
     # LLM provider validation
     llm_config = config.get("llm", {})

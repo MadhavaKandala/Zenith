@@ -11,6 +11,7 @@ Actions:
 
 import sys
 import os
+import json
 
 # Add project root to path for core module imports
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..', '..', '..', '..'))
@@ -26,6 +27,12 @@ def _get_ocr():
     if _ocr is None:
         _ocr = OCREngine()
     return _ocr
+
+
+def _print_json(key, speech, **kwargs):
+    data = {"speech": speech}
+    data.update(kwargs)
+    print(json.dumps({"key": key, "data": data}))
 
 
 def read_text(params):
@@ -50,23 +57,23 @@ def read_text(params):
             image_path = path_match.group()
 
     if not image_path:
-        return print('{"key": "no_path", "data": {"speech": "I need an image path to read text from, sir. Please specify the file location."}}')
+        return _print_json("no_path", "I need an image path to read text from, sir. Please specify the file location.")
 
     if not os.path.isfile(image_path):
-        return print(f'{{"key": "file_not_found", "data": {{"speech": "I cannot find that file, sir. Please check the path: {image_path}"}}}}')
+        return _print_json("file_not_found", f"I cannot find that file, sir. Please check the path: {image_path}")
 
     try:
         text = ocr.extract_text(image_path)
         if text:
             # Truncate for speech output
             speech_text = text[:500] + ('...' if len(text) > 500 else '')
-            return print(f'{{"key": "text_found", "data": {{"speech": "Here is what I found in the image, sir: {speech_text}"}}}}')
+            return _print_json("text_found", f"Here is what I found in the image, sir: {speech_text}")
         else:
-            return print('{"key": "no_text", "data": {"speech": "I could not detect any text in that image, sir."}}')
+            return _print_json("no_text", "I could not detect any text in that image, sir.")
     except RuntimeError as e:
-        return print(f'{{"key": "ocr_unavailable", "data": {{"speech": "OCR is not available on this system, sir. {str(e)}"}}}}')
+        return _print_json("ocr_unavailable", f"OCR is not available on this system, sir. {str(e)}")
     except Exception as e:
-        return print(f'{{"key": "error", "data": {{"speech": "An error occurred while reading the image, sir: {str(e)}"}}}}')
+        return _print_json("error", f"An error occurred while reading the image, sir: {str(e)}")
 
 
 def screenshot_text(params):
@@ -77,10 +84,10 @@ def screenshot_text(params):
         text = ocr.screenshot_to_text()
         if text:
             speech_text = text[:500] + ('...' if len(text) > 500 else '')
-            return print(f'{{"key": "screen_text", "data": {{"speech": "Here is what I can read on your screen, sir: {speech_text}"}}}}')
+            return _print_json("screen_text", f"Here is what I can read on your screen, sir: {speech_text}")
         else:
-            return print('{"key": "no_screen_text", "data": {"speech": "I could not detect any text on your screen, sir."}}')
+            return _print_json("no_screen_text", "I could not detect any text on your screen, sir.")
     except RuntimeError as e:
-        return print(f'{{"key": "ocr_unavailable", "data": {{"speech": "OCR is not available: {str(e)}"}}}}')
+        return _print_json("ocr_unavailable", f"OCR is not available: {str(e)}")
     except Exception as e:
-        return print(f'{{"key": "error", "data": {{"speech": "Screen reading failed, sir: {str(e)}"}}}}')
+        return _print_json("error", f"Screen reading failed, sir: {str(e)}")

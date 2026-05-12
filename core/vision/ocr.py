@@ -49,19 +49,34 @@ class OCREngine:
         if self.available and tesseract_cmd:
             pytesseract.pytesseract.tesseract_cmd = tesseract_cmd
         elif self.available:
-            # Try common Windows paths
-            common_paths = [
-                r"C:\Program Files\Tesseract-OCR\tesseract.exe",
-                r"C:\Program Files (x86)\Tesseract-OCR\tesseract.exe",
-            ]
-            env_path = os.getenv("TESSERACT_CMD")
-            if env_path:
-                common_paths.insert(0, env_path)
+            import shutil
+            import platform
 
-            for path in common_paths:
-                if os.path.isfile(path):
-                    pytesseract.pytesseract.tesseract_cmd = path
-                    break
+            env_path = os.getenv("TESSERACT_CMD")
+            if env_path and os.path.isfile(env_path):
+                pytesseract.pytesseract.tesseract_cmd = env_path
+            else:
+                which_path = shutil.which("tesseract")
+                if which_path:
+                    pytesseract.pytesseract.tesseract_cmd = which_path
+                else:
+                    system = platform.system()
+                    if system == "Windows":
+                        common_paths = [
+                            r"C:\Program Files\Tesseract-OCR\tesseract.exe",
+                            r"C:\Program Files (x86)\Tesseract-OCR\tesseract.exe",
+                        ]
+                    else:
+                        common_paths = [
+                            "/usr/bin/tesseract",
+                            "/usr/local/bin/tesseract",
+                            "/opt/homebrew/bin/tesseract"
+                        ]
+
+                    for path in common_paths:
+                        if os.path.isfile(path):
+                            pytesseract.pytesseract.tesseract_cmd = path
+                            break
 
         logger.info("OCR engine initialized (available=%s, lang=%s)", self.available, lang)
 

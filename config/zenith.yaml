@@ -51,7 +51,7 @@ vision:
     enabled: true
     engine: "tesseract"             # tesseract
     language: "eng"
-    tesseract_cmd: "${TESSERACT_CMD}"  # optional: path to tesseract binary
+    tesseract_cmd: null             # optional: path to tesseract binary, null means auto-detect
   face_auth:
     enabled: true
     engine: "lbph"                  # LBPH (Local Binary Patterns Histograms)
@@ -78,7 +78,10 @@ browser:
 
 rate_limiting:
   max_requests_per_minute: 30       # utterances per client per minute
-  block_duration_seconds: 30        # block duration after limit exceeded
+  warn_after_requests: 20           # soft warning threshold
+  block_duration_seconds: 60        # block duration after limit exceeded
+  backoff_multiplier: 2.0           # multiply block duration on repeated violations
+  max_block_duration_seconds: 3600  # cap for block duration
 
 ui:
   theme: "stark"                    # stark | minimal | neon

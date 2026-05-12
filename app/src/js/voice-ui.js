@@ -196,13 +196,18 @@ export function setComposerVoiceTranscript(text, options = {}) {
   if (!input || !text) return
 
   const { final = false } = options
-  const hasManualText = input.value.trim() && input.dataset.voiceDraft !== 'true'
-  const isManualEntryActive = document.activeElement === input && hasManualText
+  const isManualEntryActive = document.activeElement === input && input.value.trim()
   if (isManualEntryActive) return
 
   input.value = text
   input.title = text
   input.dataset.voiceDraft = 'true'
+
+  const clearVoiceDraftMarker = () => {
+    delete input.dataset.voiceDraft
+    input.removeEventListener('input', clearVoiceDraftMarker)
+  }
+  input.addEventListener('input', clearVoiceDraftMarker)
 
   if (final) {
     window.setTimeout(() => {

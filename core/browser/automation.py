@@ -14,7 +14,8 @@ Usage:
 from __future__ import annotations
 
 import logging
-from typing import Optional
+import logging
+from typing import Optional, Any
 
 logger = logging.getLogger("zenith.browser.automation")
 
@@ -33,15 +34,17 @@ except ImportError:
 class BrowserAutomation:
     """Playwright-based browser automation for Zenith."""
 
-    def __init__(self, headless: bool = True):
+    def __init__(self, headless: bool = True, user_agent: Optional[str] = None):
         """
         Initialize browser automation.
 
         Args:
             headless: Run browser in headless mode (default True).
+            user_agent: Optional custom User-Agent string.
         """
         self.available = _PLAYWRIGHT_AVAILABLE
         self.headless = headless
+        self.user_agent = user_agent
         self._playwright = None
         self._browser: Optional[Browser] = None
         self._context: Optional[BrowserContext] = None
@@ -60,9 +63,12 @@ class BrowserAutomation:
 
         self._playwright = await async_playwright().start()
         self._browser = await self._playwright.chromium.launch(headless=self.headless)
-        self._context = await self._browser.new_context(
-            user_agent="Zenith-AI/1.0 (Desktop Assistant)"
-        )
+        
+        context_kwargs = {}
+        if self.user_agent:
+            context_kwargs["user_agent"] = self.user_agent
+            
+        self._context = await self._browser.new_context(**context_kwargs)
         logger.info("Browser automation started (headless=%s)", self.headless)
 
     async def stop(self) -> None:
@@ -75,12 +81,13 @@ class BrowserAutomation:
             await self._playwright.stop()
         logger.info("Browser automation stopped")
 
-    async def new_page(self, url: Optional[str] = None) -> Page:
+    async def new_page(self, url: Optional[str] = None, timeout: Optional[int] = None) -> Page:
         """
         Open a new browser page.
 
         Args:
             url: Optional URL to navigate to immediately.
+            timeout: Optional navigation timeout in milliseconds.
 
         Returns:
             Playwright Page object.
@@ -90,8 +97,11 @@ class BrowserAutomation:
 
         page = await self._context.new_page()
         if url:
-            await page.goto(url, wait_until="domcontentloaded")
-            logger.info("Navigated to: %s", url)
+            try:
+                await page.goto(url, wait_until="domcontentloaded", timeout=timeout)
+                logger.info("Navigated to: %s", url)
+            except Exception as e:
+                logger.error("Navigation failed or timed out: %s", e)
         return page
 
     async def get_text(self, page: Page) -> str:
@@ -135,7 +145,7 @@ class BrowserAutomation:
         await page.fill(selector, value)
         logger.info("Filled input %s", selector)
 
-    async def evaluate_js(self, page: Page, expression: str) -> any:
+    async def evaluate_js(self, page: Page, expression: str) -> Any:
         """Execute JavaScript on the page and return the result."""
         return await page.evaluate(expression)
 
@@ -170,17 +180,51 @@ class BrowserAutomation:
         finally:
             await page.close()
 
-    async def search_google(self, query: str) -> list[dict]:
+    async def search_google(self, query: str, api_key: Optional[str] = None) -> list[dict]:
         """
         Perform a Google search and return results.
 
         Args:
             query: Search query string.
+            api_key: Optional search API key.
 
         Returns:
             List of dicts with 'title', 'url', 'snippet'.
         """
-        page = await self.new_page(f"https://www.google.com/search?q={query}")
+        import urllib.parse
+        encoded_query = urllib.parse.quote_plus(query)
+
+        if api_key:
+            import aiohttp
+            import asyncio
+            url = f"https://serpapi.com/search.json?q={encoded_query}&api_key={api_key}"
+            for attempt in range(3):
+                try:
+                    async with aiohttp.ClientSession() as session:
+                        async with session.get(url, timeout=10) as resp:
+                            if resp.status == 200:
+                                data = await resp.json()
+                                results = []
+                                for r in data.get("organic_results", [])[:10]:
+                                    results.append({
+                                        "title": r.get("title", ""),
+                                        "url": r.get("link", ""),
+                                        "snippet": r.get("snippet", "")
+                                    })
+                                return results
+                            elif resp.status == 429:
+                                await asyncio.sleep(2 ** attempt)
+                                continue
+                            else:
+                                logger.error("Search API returned status %s", resp.status)
+                                break
+                except Exception as exc:
+                    logger.error("Search API request failed: %s", exc)
+                    await asyncio.sleep(2 ** attempt)
+            return []
+
+        logger.warning("Using automated browser scraping for search (not recommended)")
+        page = await self.new_page(f"https://www.google.com/search?q={encoded_query}")
         try:
             await page.wait_for_selector("div#search", timeout=5000)
             results = await page.eval_on_selector_all(

@@ -75,6 +75,9 @@ class ZenithMemory:
             ext = ".json" if db_type == "tinydb" else ".db"
             self._db_path = self._db_dir / f"zenith_memory{ext}"
 
+        self._knowledge_cache = {}
+        self._skill_cache = {}
+
         # Initialize backend
         if db_type == "tinydb":
             if not _TINYDB_AVAILABLE:
@@ -194,12 +197,14 @@ class ZenithMemory:
 
     def _enforce_chat_limit_tinydb(self) -> None:
         """Trim chat history to the configured limit."""
+        if len(self._chat_table) <= self.chat_history_limit:
+            return
+            
+        logger.warning("TinyDB memory constraint: reading entire chat table for pruning. Use SQLite for large histories.")
         all_msgs = self._chat_table.all()
-        if len(all_msgs) > self.chat_history_limit:
-            sorted_msgs = sorted(all_msgs, key=lambda x: x.get("timestamp", 0))
-            excess = len(all_msgs) - self.chat_history_limit
-            for msg in sorted_msgs[:excess]:
-                self._chat_table.remove(doc_ids=[msg.doc_id])
+        sorted_msgs = sorted(all_msgs, key=lambda x: x.get("timestamp", 0))
+        excess = len(all_msgs) - self.chat_history_limit
+        self._chat_table.remove(doc_ids=[msg.doc_id for msg in sorted_msgs[:excess]])
 
     def _enforce_chat_limit_sqlite(self) -> None:
         """Trim chat history to the configured limit."""
@@ -234,6 +239,8 @@ class ZenithMemory:
             value: The fact value.
             source: Origin of the fact ('user', 'inference', 'skill').
         """
+        self._knowledge_cache[key] = value
+        
         if self.db_type == "tinydb":
             Fact = Query()
             self._facts_table.upsert(
@@ -259,20 +266,26 @@ class ZenithMemory:
         Returns:
             The fact value, or None if not found.
         """
+        if key in self._knowledge_cache:
+            return self._knowledge_cache[key]
+            
+        result_val = None
         if self.db_type == "tinydb":
             Fact = Query()
             result = self._facts_table.search(Fact.key == key)
-            return result[0]["value"] if result else None
+            result_val = result[0]["value"] if result else None
         else:
             cursor = self._conn.cursor()
             cursor.execute("SELECT value FROM knowledge_vault WHERE key = ?", (key,))
             row = cursor.fetchone()
             if row:
                 try:
-                    return json.loads(row[0])
+                    result_val = json.loads(row[0])
                 except (json.JSONDecodeError, TypeError):
-                    return row[0]
-            return None
+                    result_val = row[0]
+                    
+        self._knowledge_cache[key] = result_val
+        return result_val
 
     def get_all_facts(self) -> dict[str, Any]:
         """Return all stored facts as a dictionary."""
@@ -291,6 +304,7 @@ class ZenithMemory:
 
     def forget_fact(self, key: str) -> bool:
         """Remove a fact from the knowledge vault."""
+        self._knowledge_cache.pop(key, None)
         if self.db_type == "tinydb":
             Fact = Query()
             removed = self._facts_table.remove(Fact.key == key)
@@ -305,6 +319,10 @@ class ZenithMemory:
 
     def skill_store(self, skill_name: str, key: str, value: Any) -> None:
         """Store data for a specific skill."""
+        if skill_name not in self._skill_cache:
+            self._skill_cache[skill_name] = {}
+        self._skill_cache[skill_name][key] = value
+        
         if self.db_type == "tinydb":
             SkillQ = Query()
             self._skills_table.upsert(
@@ -320,12 +338,16 @@ class ZenithMemory:
 
     def skill_recall(self, skill_name: str, key: str) -> Optional[Any]:
         """Recall data stored by a specific skill."""
+        if skill_name in self._skill_cache and key in self._skill_cache[skill_name]:
+            return self._skill_cache[skill_name][key]
+            
+        result_val = None
         if self.db_type == "tinydb":
             SkillQ = Query()
             result = self._skills_table.search(
                 (SkillQ.skill_name == skill_name) & (SkillQ.key == key)
             )
-            return result[0]["value"] if result else None
+            result_val = result[0]["value"] if result else None
         else:
             cursor = self._conn.cursor()
             cursor.execute(
@@ -335,10 +357,14 @@ class ZenithMemory:
             row = cursor.fetchone()
             if row:
                 try:
-                    return json.loads(row[0])
+                    result_val = json.loads(row[0])
                 except (json.JSONDecodeError, TypeError):
-                    return row[0]
-            return None
+                    result_val = row[0]
+                    
+        if skill_name not in self._skill_cache:
+            self._skill_cache[skill_name] = {}
+        self._skill_cache[skill_name][key] = result_val
+        return result_val
 
     def skill_get_all(self, skill_name: str) -> dict[str, Any]:
         """Get all data for a specific skill."""

@@ -49,13 +49,23 @@ function discoverSkills(skillsDir: string): SkillRoute[] {
     return routes
   }
 
-  const domains = fs.readdirSync(skillsDir, { withFileTypes: true })
-    .filter(d => d.isDirectory())
+  let domains: fs.Dirent[] = []
+  try {
+    domains = fs.readdirSync(skillsDir, { withFileTypes: true }).filter(d => d.isDirectory())
+  } catch (err) {
+    console.error(`[Bridge] Error reading skills directory ${skillsDir}:`, err)
+    return routes
+  }
 
   for (const domain of domains) {
     const domainPath = path.join(skillsDir, domain.name)
-    const skills = fs.readdirSync(domainPath, { withFileTypes: true })
-      .filter(d => d.isDirectory())
+    let skills: fs.Dirent[] = []
+    try {
+      skills = fs.readdirSync(domainPath, { withFileTypes: true }).filter(d => d.isDirectory())
+    } catch (err) {
+      console.error(`[Bridge] Error reading domain directory ${domainPath}:`, err)
+      continue
+    }
 
     for (const skill of skills) {
       const skillPath = path.join(domainPath, skill.name)
@@ -89,7 +99,8 @@ function executePythonSkill(intentObj: IntentObject): Promise<SkillExecutionResu
     if (!fs.existsSync(tmpDir)) {
       fs.mkdirSync(tmpDir, { recursive: true })
     }
-    const intentFilePath = path.join(tmpDir, 'intent-object.json')
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9)
+    const intentFilePath = path.join(tmpDir, `intent-object-${uniqueSuffix}.json`)
     fs.writeFileSync(intentFilePath, JSON.stringify(intentObj, null, 2))
 
     const pythonProcess: ChildProcess = spawn(
@@ -111,7 +122,20 @@ function executePythonSkill(intentObj: IntentObject): Promise<SkillExecutionResu
       stderr += data.toString()
     })
 
+    let timeoutId = setTimeout(() => {
+      pythonProcess.kill()
+      try { fs.promises.unlink(intentFilePath) } catch (e) {}
+      resolve({
+        success: false,
+        output: '',
+        executionTime: Date.now() - startTime,
+        error: 'Python process timed out',
+      })
+    }, 30000)
+
     pythonProcess.on('close', (code: number | null) => {
+      clearTimeout(timeoutId)
+      try { fs.promises.unlink(intentFilePath) } catch (e) {}
       const executionTime = Date.now() - startTime
 
       if (code === 0) {
@@ -131,6 +155,8 @@ function executePythonSkill(intentObj: IntentObject): Promise<SkillExecutionResu
     })
 
     pythonProcess.on('error', (err: Error) => {
+      clearTimeout(timeoutId)
+      try { fs.promises.unlink(intentFilePath) } catch (e) {}
       resolve({
         success: false,
         output: '',
@@ -165,7 +191,23 @@ async function routeIntent(intentObj: IntentObject): Promise<SkillExecutionResul
     `[Bridge] Routing ${intentObj.domain}.${intentObj.skill}.${intentObj.action} via ${matchedRoute.bridge}`
   )
 
-  return executePythonSkill(intentObj)
+  if (matchedRoute.bridge === 'python') {
+    return executePythonSkill(intentObj)
+  } else if (matchedRoute.bridge === 'nodejs') {
+    return {
+      success: false,
+      output: '',
+      executionTime: 0,
+      error: `Node.js skill execution not implemented yet`,
+    }
+  } else {
+    return {
+      success: false,
+      output: '',
+      executionTime: 0,
+      error: `Unknown bridge type ${matchedRoute.bridge}`,
+    }
+  }
 }
 
 /**
