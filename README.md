@@ -108,6 +108,7 @@ The following items are part of the current ZENITH project scope.
 | Productivity skills | Reminders and to-do list management |
 | Information skills | Weather, news, dictionary, Wikipedia, browser search, and Q&A |
 | Media and automation | YouTube utility skills, browser actions, network checks, and security lookups |
+| Vision and Recognition | Object detection (YOLOv8), Face Authentication, and OCR (Tesseract) |
 | Developer workflow | Build scripts, tests, training scripts, Docker files, and setup helpers |
 
 ---
@@ -126,8 +127,7 @@ The following items are intentionally outside the current scope. They are not re
 | Marketplace for third-party skills | Skills are modular, but a public marketplace is not part of this scope |
 | Production-grade secret vault | Environment variables and config files are used; dedicated vault integration is future work |
 | Medical, legal, or financial advice automation | ZENITH can retrieve information, but it is not designed for regulated expert decision-making |
-| Unverified vision and biometric systems | Computer-vision and biometric-login subsystems are not part of the verified current implementation |
-| Completed Node.js extension bridge | `bridges/nodejs/src/main.ts` is currently a reserved extension point, not a production bridge |
+| Native Node.js Skills | While `bridges/nodejs/src/main.ts` serves as the production orchestrator for Python skills, native JavaScript/Node.js skills are future scope |
 
 ---
 
@@ -280,6 +280,7 @@ The present repository has enough source code to verify the main assistant workf
 | Reminder skill | `skills/productivity/reminders/` |
 | To-do skill | `skills/productivity/todo_list/` |
 | Information skills | `skills/information/weather/`, `skills/information/news/`, `skills/information/dictionary/`, `skills/information/wiki/` |
+| Vision & Recognition Engine | `core/vision/face_auth.py`, `core/vision/ocr.py`, `core/vision/object_detect.py` |
 | Tests | `test/unit/`, `test/e2e/`, `test/json/` |
 
 ---
@@ -300,6 +301,7 @@ ZENITH's current requirements scope is intentionally limited to features that ar
 | Built-in Leon skill set | Fulfilled | `skills/leon/` |
 | Productivity skills | Fulfilled | `skills/productivity/reminders/`, `skills/productivity/todo_list/` |
 | Information and utility skills | Fulfilled | `skills/information/`, `skills/utilities/`, `skills/automation/` |
+| Vision & Recognition Engine | Fulfilled | `core/vision/face_auth.py`, `core/vision/ocr.py`, `core/vision/object_detect.py` |
 | Automated verification assets | Fulfilled | `test/unit/`, `test/e2e/`, `test/json/` |
 
 Anything not listed above is not part of the current requirements scope. Keeping the requirements limited to evidenced implementation improves evaluation accuracy: every listed requirement maps directly to source code.
