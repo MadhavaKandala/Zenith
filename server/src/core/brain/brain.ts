@@ -24,7 +24,6 @@ import { langs } from '@@/core/langs.json'
 import {
   HAS_TTS,
   PYTHON_BRIDGE_BIN_PATH,
-  NODEJS_BRIDGE_BIN_PATH,
   TMP_PATH
 } from '@/constants'
 import { SOCKET_SERVER, TTS } from '@/core'
@@ -305,13 +304,16 @@ export default class Brain {
         )
 
         if (skillBridge === SkillBridges.Python) {
+          SOCKET_SERVER.socket?.emit('zenith:tool_call', {
+            tool: `${intentObject.domain}.${intentObject.skill}.${intentObject.action}`,
+            status: 'started'
+          })
+          SOCKET_SERVER.socket?.emit('zenith:activity', {
+            scope: 'skill',
+            message: `Executing ${intentObject.domain}.${intentObject.skill}.${intentObject.action}`
+          })
           this.skillProcess = spawn(
             `${PYTHON_BRIDGE_BIN_PATH} "${intentObjectPath}"`,
-            { shell: true }
-          )
-        } else if (skillBridge === SkillBridges.NodeJS) {
-          this.skillProcess = spawn(
-            `${NODEJS_BRIDGE_BIN_PATH} "${intentObjectPath}"`,
             { shell: true }
           )
         } else {
@@ -454,7 +456,15 @@ export default class Brain {
 
             if (!this.isMuted) {
               SOCKET_SERVER.socket?.emit('is-typing', false)
+              SOCKET_SERVER.socket?.emit('zenith:state_change', {
+                state: 'idle'
+              })
             }
+
+            SOCKET_SERVER.socket?.emit('zenith:tool_call', {
+              tool: `${nluResult.classification.domain}.${nluResult.classification.skill}.${nluResult.classification.action}`,
+              status: 'completed'
+            })
 
             const executionTimeEnd = Date.now()
             const executionTime = executionTimeEnd - executionTimeStart
@@ -595,7 +605,13 @@ export default class Brain {
           if (!this.isMuted) {
             this.talk(answer as string, true)
             SOCKET_SERVER.socket?.emit('is-typing', false)
+            SOCKET_SERVER.socket?.emit('zenith:state_change', { state: 'idle' })
           }
+
+          SOCKET_SERVER.socket?.emit('zenith:tool_call', {
+            tool: `${nluResult.classification.domain}.${nluResult.classification.skill}.${nluResult.classification.action}`,
+            status: 'completed'
+          })
 
           // Send suggestions to the client
           if (nextAction?.suggestions) {

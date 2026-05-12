@@ -101,7 +101,7 @@ async function connectVoice() {
     setLastVoiceEvent('Requesting a LiveKit session token from Zenith.')
     addVoiceHistory(
       'Session requested',
-      `Starting a voice session with the ${preset.label} ElevenLabs preset.`
+      `Starting a voice session with the ${preset.label} TTS pipeline.`
     )
 
     const params = new URLSearchParams({
@@ -211,7 +211,7 @@ function attachRoomHandlers(activeRoom, preset) {
     if (normalized === 'connected') {
       if (!isMicPausedForAnswer) {
         setVoiceStatus(
-          'listening',
+        'listening',
           `Room connected. Zenith is listening and will answer with ${preset.label}.`
         )
       }
@@ -274,7 +274,7 @@ function attachRoomHandlers(activeRoom, preset) {
     try {
       await activeRoom.startAudio()
       await audioEl.play()
-      setVoiceStatus('speaking', `Zenith is speaking now with the ${preset.label} preset.`)
+      setVoiceStatus('speaking', `Zenith is speaking now with ${preset.label}.`)
       isMicPausedForAnswer = false
       setForceTurnButtonState('disabled')
       setLastVoiceEvent(`Remote audio track attached from ${participant.identity}.`)

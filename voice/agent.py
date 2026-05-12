@@ -14,43 +14,40 @@ from livekit.agents import JobContext, WorkerOptions, cli
 from livekit.agents.llm import ChatMessage, function_tool
 from livekit.agents.voice import Agent, AgentSession
 from livekit.agents.voice.events import EventTypes
-from livekit.plugins import (
-    elevenlabs as lk_elevenlabs,
-    google as lk_google,
-    groq as lk_groq,
-    silero,
-)
+from livekit.plugins import google as lk_google, groq as lk_groq, silero
 
+from config.loader import load_zenith_config
+from providers.manager import ZenithProviderManager
 from windows_sapi_tts import WindowsSapiTTS
 
 os.environ.setdefault("PYTHONIOENCODING", "utf-8")
 os.environ.setdefault("PYTHONUTF8", "1")
 
-ROOT_ENV_PATH = Path(__file__).resolve().parents[1] / ".env"
+ROOT_DIR = Path(__file__).resolve().parents[1]
+ROOT_ENV_PATH = ROOT_DIR / ".env"
+GOOGLE_CREDENTIALS_PATH = ROOT_DIR / "core" / "config" / "voice" / "google-cloud.json"
+
 load_dotenv(dotenv_path=ROOT_ENV_PATH)
+
+if GOOGLE_CREDENTIALS_PATH.exists() and not os.getenv("GOOGLE_APPLICATION_CREDENTIALS"):
+    os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = str(GOOGLE_CREDENTIALS_PATH)
 
 if hasattr(sys.stdout, "reconfigure"):
     sys.stdout.reconfigure(encoding="utf-8")
 if hasattr(sys.stderr, "reconfigure"):
     sys.stderr.reconfigure(encoding="utf-8")
 
-print("API Keys loaded:")
-print("  GOOGLE:", "OK" if os.getenv("GOOGLE_API_KEY") else "MISSING")
-print("  GROQ:", "OK" if os.getenv("GROQ_API_KEY") else "MISSING")
-print(
-    "  ELEVENLABS:",
-    "OK"
-    if os.getenv("ELEVENLABS_API_KEY") or os.getenv("ELEVEN_API_KEY")
-    else "MISSING",
-)
-print("  LIVEKIT URL:", os.getenv("LIVEKIT_URL", "MISSING"))
+CONFIG = load_zenith_config(ROOT_DIR / "config" / "zenith.yaml")
+VOICE_CONFIG = CONFIG.get("voice", {})
+LLM_CONFIG = CONFIG.get("llm", {})
 
-STT_PROVIDER = "groq_whisper"
-LLM_PROVIDER = "gemini"
-TTS_PROVIDER = "elevenlabs"
+STT_PROVIDER = VOICE_CONFIG.get("stt_provider", "groq_whisper")
+LLM_PROVIDER = LLM_CONFIG.get("primary", "gemini")
+TTS_PROVIDER = VOICE_CONFIG.get("tts_provider", "google_cloud")
 GROQ_STT_MODEL = "whisper-large-v3-turbo"
-GEMINI_LLM_MODEL = "gemini-2.5-flash"
-ELEVENLABS_TTS_MODEL = "eleven_turbo_v2_5"
+GEMINI_LLM_MODEL = LLM_CONFIG.get("gemini", {}).get("model", "gemini-2.5-flash")
+GOOGLE_TTS_MODEL = "gemini-2.5-flash-tts"
+
 SITE_LABELS = {
     "youtube": "YouTube",
     "github": "GitHub",
@@ -81,13 +78,12 @@ SITES = {
     "linkedin": "https://www.linkedin.com",
 }
 
-
 SYSTEM_PROMPT = (
-    "You are Zenith, a personal AI assistant like "
-    "JARVIS from Iron Man. Be extremely concise - "
-    "maximum 2 sentences for voice output. "
-    "Address the user as sir. "
-    "You are in India, timezone IST."
+    "You are Zenith, a local-first personal AI assistant inspired by JARVIS. "
+    "Be concise, accurate, and proactive. "
+    "Use tools when browsing, desktop actions, or provider-chain reasoning are needed. "
+    "Keep spoken answers short, usually no more than two sentences. "
+    "Address the user as sir and reason in the Asia/Kolkata timezone."
 )
 
 logger = logging.getLogger("zenith-agent")
@@ -129,7 +125,7 @@ async def search_wikipedia(query: str) -> str:
     """Search Wikipedia for information about a topic.
 
     Args:
-        query: The topic to search for
+        query: The topic to search for.
     """
     try:
         import wikipedia
@@ -140,9 +136,33 @@ async def search_wikipedia(query: str) -> str:
         return f"I could not find information about {query}, sir."
 
 
+@function_tool
+async def answer_with_provider_chain(query: str) -> str:
+    """Answer an open-ended question through the Gemini -> Groq -> OpenRouter chain.
+
+    Args:
+        query: The user's knowledge or reasoning request.
+    """
+    manager = ZenithProviderManager(CONFIG)
+    messages = [
+        {
+            "role": "system",
+            "content": (
+                "You are Zenith, a local-first AI assistant. "
+                "Answer precisely, stay practical, and keep the response short enough for speech."
+            ),
+        },
+        {"role": "user", "content": query},
+    ]
+    try:
+        return await manager.chat(messages)
+    except Exception:
+        return "All configured reasoning providers are unavailable right now, sir."
+
+
 def _build_stt() -> lk_groq.STT:
     return lk_groq.STT(
-        model="whisper-large-v3-turbo",
+        model=GROQ_STT_MODEL,
         api_key=os.getenv("GROQ_API_KEY"),
         language="en",
     )
@@ -175,29 +195,30 @@ def _parse_job_metadata(ctx: JobContext) -> dict[str, str]:
         logger.warning("Unable to parse job metadata: %s", raw_metadata)
         return {}
 
-    if isinstance(parsed, dict):
-        return parsed
-
-    return {}
+    return parsed if isinstance(parsed, dict) else {}
 
 
 def _build_tts(job_metadata: dict[str, str] | None = None):
-    elevenlabs_key = os.getenv("ELEVENLABS_API_KEY") or os.getenv("ELEVEN_API_KEY")
     job_metadata = job_metadata or {}
-    elevenlabs_voice_id = job_metadata.get("voiceId") or os.getenv(
-        "ELEVENLABS_VOICE_ID", "21m00Tcm4TlvDq8ikWAM"
-    )
-    elevenlabs_voice_label = job_metadata.get("voiceLabel") or "Rachel"
+    voice_name = job_metadata.get("voiceId") or "en-US-Chirp3-HD-Achernar"
+    voice_label = job_metadata.get("voiceLabel") or "Google Cloud"
 
-    if elevenlabs_key:
+    google_credentials_ready = bool(
+        os.getenv("GOOGLE_APPLICATION_CREDENTIALS")
+        or os.getenv("GOOGLE_CLOUD_PROJECT")
+    )
+
+    if google_credentials_ready:
         return (
-            lk_elevenlabs.TTS(
-                api_key=elevenlabs_key,
-                voice_id=elevenlabs_voice_id,
-                model=ELEVENLABS_TTS_MODEL,
+            lk_google.TTS(
+                language="en-US",
+                gender="female",
+                voice_name=voice_name,
+                model_name=GOOGLE_TTS_MODEL,
+                use_streaming=True,
             ),
-            elevenlabs_voice_label,
-            elevenlabs_voice_id,
+            voice_label,
+            voice_name,
         )
 
     return WindowsSapiTTS(), "Windows SAPI", "local-fallback"
@@ -220,7 +241,7 @@ def _extract_message_text(message: ChatMessage) -> str:
 
 def _register_session_debug_handlers(session: AgentSession) -> None:
     available_session_events = list(get_args(EventTypes))
-    print("Available session events:", available_session_events)
+    logger.info("Available session events: %s", available_session_events)
 
     @session.on("user_input_transcribed")
     def on_user_input(event) -> None:
@@ -238,7 +259,7 @@ def _register_session_debug_handlers(session: AgentSession) -> None:
 
     @session.on("speech_created")
     def on_speech_created(event) -> None:
-        logger.info("Speech created")
+        logger.info("Speech created: %s", type(event).__name__)
 
     @session.on("agent_state_changed")
     def on_state_change(event) -> None:
@@ -257,6 +278,7 @@ class ZenithAgent(Agent):
                 open_application,
                 get_current_time,
                 search_wikipedia,
+                answer_with_provider_chain,
             ],
         )
 
@@ -318,13 +340,10 @@ async def entrypoint(ctx: JobContext) -> None:
     else:
         logger.warning("No remote participant joined before greeting timeout")
 
-    logger.info("Starting greeting speech")
     await session.say(
-        "Online. I am Zenith, your personal AI assistant. "
-        "How can I help you today, sir?",
+        "Online. I am Zenith, your personal AI assistant. How can I help you today, sir?",
         allow_interruptions=True,
     )
-    logger.info("Greeting speech finished")
 
 
 def main() -> None:

@@ -1,13 +1,15 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+
 from __future__ import annotations
 
+import asyncio
+import json
 from pathlib import Path
 from random import choice
-import json
-import os
 
-import requests
+from config.loader import load_zenith_config
+from providers.manager import ZenithProviderManager
 
 
 SKILL_DIR = Path(__file__).resolve().parent
@@ -26,29 +28,32 @@ def _respond(key: str, replacements: dict | None = None) -> dict:
     return {"type": "end", "key": key, "speech": template}
 
 
-def answer(string, entities):
-    """Answer any question using Gemini."""
-    api_key = os.getenv("GOOGLE_API_KEY")
-    if not api_key:
-        return _respond("missing_api_key")
+async def _run_provider_chain(question: str) -> str:
+    config = load_zenith_config()
+    manager = ZenithProviderManager(config)
+    messages = [
+        {
+            "role": "system",
+            "content": (
+                "You are Zenith, a local-first personal AI assistant inspired by JARVIS. "
+                "Be concise, accurate, and practical. Address the user as sir. "
+                "Answer in no more than three sentences."
+            ),
+        },
+        {"role": "user", "content": question},
+    ]
+    return await manager.chat(messages)
 
-    prompt = (
-        "You are Zenith, a personal AI assistant in the style of JARVIS from Iron Man.\n"
-        "Answer this question concisely and helpfully (2-3 sentences max for voice output):\n\n"
-        f"{string}"
-    )
-    url = (
-        "https://generativelanguage.googleapis.com/v1beta/models/"
-        f"gemini-2.5-flash:generateContent?key={api_key}"
-    )
-    payload = {"contents": [{"parts": [{"text": prompt}]}]}
 
-    response = requests.post(url, json=payload, timeout=30)
-    data = response.json()
+def answer(string, entities=None):
+    """Answer an open-ended question through the configured provider chain."""
+    question = (string or "").strip()
+    if not question:
+        return _respond("error")
+
     try:
-        answer_text = data["candidates"][0]["content"]["parts"][0]["text"].strip()
-    except (KeyError, IndexError, TypeError):
+        answer_text = asyncio.run(_run_provider_chain(question))
+    except Exception:
         return _respond("error")
 
     return _respond("answered", {"response": answer_text})
-

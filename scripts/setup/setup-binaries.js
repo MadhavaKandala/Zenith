@@ -11,13 +11,10 @@ import extractZip from 'extract-zip'
 import {
   BINARIES_FOLDER_NAME,
   GITHUB_URL,
-  NODEJS_BRIDGE_DIST_PATH,
   PYTHON_BRIDGE_DIST_PATH,
   TCP_SERVER_DIST_PATH,
-  NODEJS_BRIDGE_BIN_NAME,
   PYTHON_BRIDGE_BIN_NAME,
   TCP_SERVER_BIN_NAME,
-  NODEJS_BRIDGE_VERSION,
   PYTHON_BRIDGE_VERSION,
   TCP_SERVER_VERSION
 } from '@/constants'
@@ -32,14 +29,6 @@ import { LogHelper } from '@/helpers/log-helper'
 
 const TARGETS = new Map()
 
-TARGETS.set('nodejs-bridge', {
-  name: 'Node.js bridge',
-  distPath: NODEJS_BRIDGE_DIST_PATH,
-  manifestPath: path.join(NODEJS_BRIDGE_DIST_PATH, 'manifest.json'),
-  archiveName: `${NODEJS_BRIDGE_BIN_NAME.split('.')[0]}.zip`,
-  version: NODEJS_BRIDGE_VERSION,
-  isPlatformDependent: false // Need to be built for the target platform or not
-})
 TARGETS.set('python-bridge', {
   name: 'Python bridge',
   distPath: PYTHON_BRIDGE_DIST_PATH,
@@ -153,7 +142,6 @@ const setupBinaries = async (key) => {
 }
 
 export default async () => {
-  await setupBinaries('nodejs-bridge')
   await setupBinaries('python-bridge')
   await setupBinaries('tcp-server')
 }

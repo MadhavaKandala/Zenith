@@ -15,12 +15,6 @@ import {
 import { LogHelper } from '@/helpers/log-helper'
 import { LangHelper } from '@/helpers/lang-helper'
 import { Telemetry } from '@/telemetry'
-import { RateLimiter } from '@/core/rate-limiter'
-
-interface HotwordDataEvent {
-  hotword: string
-  buffer: Buffer
-}
 
 interface UtteranceDataEvent {
   client: string
@@ -29,7 +23,6 @@ interface UtteranceDataEvent {
 
 export default class SocketServer {
   private static instance: SocketServer
-  private rateLimiter: RateLimiter
 
   public socket: Socket<DefaultEventsMap, DefaultEventsMap> | undefined =
     undefined
@@ -39,7 +32,6 @@ export default class SocketServer {
       LogHelper.title('Socket Server')
       LogHelper.success('New instance')
 
-      this.rateLimiter = new RateLimiter(30, 60_000, 30_000)
       SocketServer.instance = this
     }
   }
@@ -98,69 +90,46 @@ export default class SocketServer {
           })
         }
 
-        if (data === 'hotword-node') {
-          // Hotword triggered
-          this.socket?.on('hotword-detected', (data: HotwordDataEvent) => {
-            LogHelper.title('Socket')
-            LogHelper.success(`Hotword ${data.hotword} detected`)
+        // Listen for new utterance
+        this.socket?.on('utterance', async (data: UtteranceDataEvent) => {
+          LogHelper.title('Socket')
+          LogHelper.info(`${data.client} emitted: ${data.value}`)
 
-            this.socket?.broadcast.emit('enable-record')
-          })
-        } else {
-          // Listen for new utterance
-          this.socket?.on('utterance', async (data: UtteranceDataEvent) => {
-            LogHelper.title('Socket')
-            LogHelper.info(`${data.client} emitted: ${data.value}`)
-
-            // Rate limiting check
-            const clientId = this.socket?.id || data.client
-            const rateCheck = this.rateLimiter.check(clientId)
-            if (!rateCheck.allowed) {
-              LogHelper.warning(
-                `Rate limit exceeded for client ${clientId}. Retry after ${rateCheck.retryAfterMs}ms`
-              )
-              this.socket?.emit('is-typing', false)
-              this.socket?.emit('answer', {
-                key: 'rate_limit',
-                data: {
-                  speech: 'You are sending requests too quickly, sir. Please wait a moment.',
-                  retryAfterMs: rateCheck.retryAfterMs
-                }
-              })
-              return
-            }
-
-            this.socket?.emit('is-typing', true)
-
-            const { value: utterance } = data
-            try {
-              LogHelper.time('Utterance processed in')
-
-              BRAIN.isMuted = false
-              const processedData = await NLU.process(utterance)
-
-              if (processedData) {
-                Telemetry.utterance(processedData)
-              }
-
-              LogHelper.title('Execution Time')
-              LogHelper.timeEnd('Utterance processed in')
-            } catch (e) {
-              LogHelper.error(`Failed to process utterance: ${e}`)
-            }
+          this.socket?.emit('is-typing', true)
+          this.socket?.emit('zenith:state_change', { state: 'thinking' })
+          this.socket?.emit('zenith:activity', {
+            scope: 'nlu',
+            message: 'Offline intent classification started.'
           })
 
-          // Handle automatic speech recognition
-          this.socket?.on('recognize', async (data: Buffer) => {
-            try {
-              await ASR.encode(data)
-            } catch (e) {
-              LogHelper.error(
-                `ASR - Failed to encode audio blob to WAVE file: ${e}`
-              )
+          const { value: utterance } = data
+          try {
+            LogHelper.time('Utterance processed in')
+
+            BRAIN.isMuted = false
+            const processedData = await NLU.process(utterance)
+
+            if (processedData) {
+              Telemetry.utterance(processedData)
             }
-          })
-        }
+
+            LogHelper.title('Execution Time')
+            LogHelper.timeEnd('Utterance processed in')
+          } catch (e) {
+            LogHelper.error(`Failed to process utterance: ${e}`)
+          }
+        })
+
+        // Handle automatic speech recognition
+        this.socket?.on('recognize', async (data: Buffer) => {
+          try {
+            await ASR.encode(data)
+          } catch (e) {
+            LogHelper.error(
+              `ASR - Failed to encode audio blob to WAVE file: ${e}`
+            )
+          }
+        })
       })
 
       this.socket.once('disconnect', () => {

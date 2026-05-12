@@ -58,17 +58,13 @@ SECTION_SCHEMA = {
 # Optional sections with their schemas
 OPTIONAL_SECTION_SCHEMA = {
     "vision": {
-        "sub_sections": ["ocr", "face_auth", "object_detection"],
+        "sub_sections": ["ocr", "object_detection"],
     },
     "desktop": {
         "sub_sections": ["automation"],
     },
     "browser": {
         "sub_sections": ["automation"],
-    },
-    "rate_limiting": {
-        "required": ["max_requests_per_minute"],
-        "types": {"max_requests_per_minute": int},
     },
 }
 

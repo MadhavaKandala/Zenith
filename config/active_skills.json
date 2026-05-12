@@ -1,0 +1,93 @@
+[
+  {
+    "domain": "productivity",
+    "skill": "reminders",
+    "label": "Reminders",
+    "category": "productivity",
+    "description": "Create, list, and complete persistent reminder items backed by TinyDB."
+  },
+  {
+    "domain": "productivity",
+    "skill": "todo_list",
+    "label": "Todo Lists",
+    "category": "productivity",
+    "description": "Manage task lists with add, rename, complete, and review actions."
+  },
+  {
+    "domain": "information",
+    "skill": "weather",
+    "label": "Weather",
+    "category": "information",
+    "description": "Fetch current weather conditions using OpenWeather."
+  },
+  {
+    "domain": "information",
+    "skill": "news",
+    "label": "News",
+    "category": "information",
+    "description": "Read top headlines using NewsAPI."
+  },
+  {
+    "domain": "information",
+    "skill": "wiki",
+    "label": "Wikipedia",
+    "category": "information",
+    "description": "Summarize reference topics from Wikipedia."
+  },
+  {
+    "domain": "information",
+    "skill": "dictionary",
+    "label": "Dictionary",
+    "category": "information",
+    "description": "Look up word definitions and parts of speech."
+  },
+  {
+    "domain": "knowledge",
+    "skill": "qa",
+    "label": "Q&A",
+    "category": "knowledge",
+    "description": "Route open-ended questions through the Gemini -> Groq -> OpenRouter provider chain."
+  },
+  {
+    "domain": "automation",
+    "skill": "chrome",
+    "label": "Browser Automation",
+    "category": "automation",
+    "description": "Open websites and search the web using local browser automation."
+  },
+  {
+    "domain": "automation",
+    "skill": "desktop_control",
+    "label": "Desktop Control",
+    "category": "automation",
+    "description": "Capture screenshots and trigger local desktop actions."
+  },
+  {
+    "domain": "utilities",
+    "skill": "ocr",
+    "label": "OCR",
+    "category": "automation",
+    "description": "Extract text from images and screenshots with Tesseract OCR."
+  },
+  {
+    "domain": "leon",
+    "skill": "joke",
+    "label": "Jokes",
+    "category": "entertainment",
+    "description": "Deliver short entertainment responses instantly from the offline NLU path."
+  },
+  {
+    "domain": "games",
+    "skill": "guess_the_number",
+    "label": "Guess The Number",
+    "category": "entertainment",
+    "description": "Play a persistent number guessing game."
+  },
+  {
+    "domain": "games",
+    "skill": "rochambeau",
+    "label": "Rock Paper Scissors",
+    "category": "entertainment",
+    "description": "Play a quick round of Rochambeau with stateful rematches."
+  }
+]

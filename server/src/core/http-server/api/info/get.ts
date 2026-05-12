@@ -11,6 +11,7 @@ import {
 } from '@/constants'
 import { LogHelper } from '@/helpers/log-helper'
 import type { APIOptions } from '@/core/http-server/http-server'
+import activeSkills from '@@/config/active_skills.json'
 
 export const getInfo: FastifyPluginAsync<APIOptions> = async (
   fastify,
@@ -39,6 +40,8 @@ export const getInfo: FastifyPluginAsync<APIOptions> = async (
           enabled: HAS_TTS,
           provider: TTS_PROVIDER
         },
+        provider_chain: ['gemini', 'groq', 'openrouter'],
+        active_skills: activeSkills,
         version: LEON_VERSION
       })
     }

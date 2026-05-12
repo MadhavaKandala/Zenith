@@ -8,7 +8,6 @@ server:
 voice:
   stt_provider: "groq_whisper"      # groq_whisper | google | deepgram
   tts_provider: "google_cloud"      # google_cloud | kokoro_local
-  wake_word: "zenith"
   language: "en-US"
   livekit_url: ""
 
@@ -37,7 +36,6 @@ personality:
 skills:
   enabled: true
   nlp_confidence_threshold: 0.6    # below this, route to LLM
-  auto_learn: false                 # future scope
 
 memory:
   db_type: "tinydb"                 # tinydb | sqlite

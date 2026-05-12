@@ -12,7 +12,7 @@ import { Telemetry } from '@/telemetry'
 import { LangHelper } from '@/helpers/lang-helper'
 import { LogHelper } from '@/helpers/log-helper'
 ;(async (): Promise<void> => {
-  process.title = 'leon'
+  process.title = 'zenith'
 
   // Start the TCP server
   global.tcpServerProcess = spawn(

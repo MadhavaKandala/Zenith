@@ -2,34 +2,14 @@ import { setOrbState } from './orb.js'
 
 const VOICE_STORAGE_KEY = 'zenith.voicePreset'
 const VOICE_STORAGE_VERSION_KEY = 'zenith.voicePresetVersion'
-const VOICE_STORAGE_VERSION = '2'
+const VOICE_STORAGE_VERSION = '3'
 let lastVoiceEventMessage = ''
 
 const VOICE_PRESETS = [
   {
-    id: '21m00Tcm4TlvDq8ikWAM',
-    label: 'Rachel',
-    note: 'Clear female voice with a polished assistant tone and strong sentence flow.'
-  },
-  {
-    id: 'EXAVITQu4vr4xnSDxMaL',
-    label: 'Bella',
-    note: 'Warmer female voice with a softer delivery for longer answers.'
-  },
-  {
-    id: 'MF3mGyEYCl7XYWbV9V6O',
-    label: 'Elli',
-    note: 'Calm female voice with an even, human presentation.'
-  },
-  {
-    id: 'TxGEqnHWrfWFTfGW9XjX',
-    label: 'Josh',
-    note: 'Deeper male voice with a steadier command-center feel.'
-  },
-  {
-    id: 'ErXwobaYiN019PkySvjV',
-    label: 'Antoni',
-    note: 'Crisp male voice, good for command responses and fast tool confirmations.'
+    id: 'en-US-Chirp3-HD-Achernar',
+    label: 'Google Cloud',
+    note: 'Low-latency Google Cloud TTS voice for the LiveKit response channel.'
   }
 ]
 
@@ -46,9 +26,15 @@ function formatLabel(value) {
 
 function getStoredVoiceId() {
   try {
-    if (window.localStorage.getItem(VOICE_STORAGE_VERSION_KEY) !== VOICE_STORAGE_VERSION) {
+    if (
+      window.localStorage.getItem(VOICE_STORAGE_VERSION_KEY) !==
+      VOICE_STORAGE_VERSION
+    ) {
       window.localStorage.removeItem(VOICE_STORAGE_KEY)
-      window.localStorage.setItem(VOICE_STORAGE_VERSION_KEY, VOICE_STORAGE_VERSION)
+      window.localStorage.setItem(
+        VOICE_STORAGE_VERSION_KEY,
+        VOICE_STORAGE_VERSION
+      )
       return null
     }
 
@@ -174,17 +160,13 @@ export function setMicButtonState(active) {
     return
   }
 
-  if (active) {
-    btn.textContent = '⊗ END SESSION'
-    btn.classList.add('mic-active')
-  } else {
-    btn.textContent = '◉ START VOICE'
-    btn.classList.remove('mic-active')
-  }
+  btn.textContent = active ? 'END SESSION' : 'START VOICE'
+  btn.classList.toggle('mic-active', active)
 }
 
 export function updateTranscript(role, text) {
-  const node = role === 'user' ? byId('voice-transcript-user') : byId('voice-transcript-agent')
+  const node =
+    role === 'user' ? byId('voice-transcript-user') : byId('voice-transcript-agent')
   if (node) {
     node.textContent = text
     node.title = text
@@ -196,7 +178,8 @@ export function setComposerVoiceTranscript(text, options = {}) {
   if (!input || !text) return
 
   const { final = false } = options
-  const isManualEntryActive = document.activeElement === input && input.value.trim()
+  const isManualEntryActive =
+    document.activeElement === input && input.value.trim()
   if (isManualEntryActive) return
 
   input.value = text
@@ -241,12 +224,15 @@ export function appendVoiceBubble(role, text) {
 
   const row = document.createElement('div')
   row.className = `msg-row ${role === 'user' ? 'user' : 'agent'}`
+
   const sender = document.createElement('div')
   sender.className = 'msg-sender'
   sender.textContent = role === 'user' ? 'YOU' : 'ZENITH'
+
   const bubble = document.createElement('div')
   bubble.className = 'msg-bubble'
   bubble.textContent = text
+
   row.append(sender, bubble)
   messages.appendChild(row)
   messages.scrollTop = messages.scrollHeight

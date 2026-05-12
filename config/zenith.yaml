@@ -8,7 +8,6 @@ server:
 voice:
   stt_provider: "groq_whisper"      # groq_whisper | google | deepgram
   tts_provider: "google_cloud"      # google_cloud | kokoro_local
-  wake_word: "zenith"
   language: "en-US"
   livekit_url: "${LIVEKIT_URL}"     # from env: LIVEKIT_URL
 
@@ -37,13 +36,11 @@ personality:
 skills:
   enabled: true
   nlp_confidence_threshold: 0.6    # below this, route to LLM
-  auto_learn: false                 # future scope
 
 memory:
   db_type: "tinydb"                 # tinydb | sqlite
   db_path: "~/.zenith/zenith.db"
   chat_history_limit: 100
-  knowledge_vault: true             # enable long-term fact storage
   per_skill_storage: true           # enable per-skill namespaced storage
 
 vision:
@@ -52,11 +49,6 @@ vision:
     engine: "tesseract"             # tesseract
     language: "eng"
     tesseract_cmd: null             # optional: path to tesseract binary, null means auto-detect
-  face_auth:
-    enabled: true
-    engine: "lbph"                  # LBPH (Local Binary Patterns Histograms)
-    confidence_threshold: 80.0      # lower = stricter match
-    model_dir: "~/.zenith/face_models"
   object_detection:
     enabled: true
     engine: "yolov8n"               # YOLOv8 nano model
@@ -75,13 +67,6 @@ browser:
     enabled: true
     engine: "playwright"            # playwright chromium
     headless: true
-
-rate_limiting:
-  max_requests_per_minute: 30       # utterances per client per minute
-  warn_after_requests: 20           # soft warning threshold
-  block_duration_seconds: 60        # block duration after limit exceeded
-  backoff_multiplier: 2.0           # multiply block duration on repeated violations
-  max_block_duration_seconds: 3600  # cap for block duration
 
 ui:
   theme: "stark"                    # stark | minimal | neon

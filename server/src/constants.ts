@@ -18,28 +18,18 @@ export const GITHUB_URL = 'https://github.com/MadhavaKandala/Zenith'
  * Binaries / distribution
  */
 export const BINARIES_FOLDER_NAME = SystemHelper.getBinariesFolderName()
-export const NODEJS_BRIDGE_ROOT_PATH = path.join('bridges', 'nodejs')
 export const PYTHON_BRIDGE_ROOT_PATH = path.join('bridges', 'python')
 export const TCP_SERVER_ROOT_PATH = path.join('tcp_server')
 
-export const NODEJS_BRIDGE_DIST_PATH = path.join(
-  NODEJS_BRIDGE_ROOT_PATH,
-  'dist'
-)
 export const PYTHON_BRIDGE_DIST_PATH = path.join(
   PYTHON_BRIDGE_ROOT_PATH,
   'dist'
 )
 export const TCP_SERVER_DIST_PATH = path.join(TCP_SERVER_ROOT_PATH, 'dist')
 
-export const NODEJS_BRIDGE_SRC_PATH = path.join(NODEJS_BRIDGE_ROOT_PATH, 'src')
 export const PYTHON_BRIDGE_SRC_PATH = path.join(PYTHON_BRIDGE_ROOT_PATH, 'src')
 export const TCP_SERVER_SRC_PATH = path.join(TCP_SERVER_ROOT_PATH, 'src')
 
-const NODEJS_BRIDGE_VERSION_FILE_PATH = path.join(
-  NODEJS_BRIDGE_SRC_PATH,
-  'version.ts'
-)
 const PYTHON_BRIDGE_VERSION_FILE_PATH = path.join(
   PYTHON_BRIDGE_SRC_PATH,
   'version.py'
@@ -48,9 +38,6 @@ const TCP_SERVER_VERSION_FILE_PATH = path.join(
   TCP_SERVER_SRC_PATH,
   'version.py'
 )
-export const [, NODEJS_BRIDGE_VERSION] = fs
-  .readFileSync(NODEJS_BRIDGE_VERSION_FILE_PATH, 'utf8')
-  .split("'")
 export const [, PYTHON_BRIDGE_VERSION] = fs
   .readFileSync(PYTHON_BRIDGE_VERSION_FILE_PATH, 'utf8')
   .split("'")
@@ -58,7 +45,6 @@ export const [, TCP_SERVER_VERSION] = fs
   .readFileSync(TCP_SERVER_VERSION_FILE_PATH, 'utf8')
   .split("'")
 
-export const NODEJS_BRIDGE_BIN_NAME = 'leon-nodejs-bridge.js'
 export const PYTHON_BRIDGE_BIN_NAME = 'leon-python-bridge'
 export const TCP_SERVER_BIN_NAME = 'leon-tcp-server'
 
@@ -72,11 +58,6 @@ export const PYTHON_BRIDGE_BIN_PATH = path.join(
   BINARIES_FOLDER_NAME,
   PYTHON_BRIDGE_BIN_NAME
 )
-export const NODEJS_BRIDGE_BIN_PATH = `${process.execPath} ${path.join(
-  NODEJS_BRIDGE_DIST_PATH,
-  'bin',
-  NODEJS_BRIDGE_BIN_NAME
-)}`
 
 export const LEON_VERSION = process.env['npm_package_version']
 
