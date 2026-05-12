@@ -2,28 +2,27 @@ name: Tests
 
 on:
   push:
-    # branches: [master, develop]
-    branches: [master]
+    branches: [main]
   pull_request:
-    # branches: [master, develop]
-    branches: [master]
+    branches: [main]
+  workflow_dispatch:
 
 jobs:
   tests:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
 
       - name: Use Python
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v5
         with:
-          python-version: 3.x
+          python-version: '3.11'
 
       - name: Use Node.js
-        uses: actions/setup-node@v2
+        uses: actions/setup-node@v4
         with:
-          node-version: 16.x
+          node-version: 22.x
           cache: npm
 
       - name: Install Pipenv
