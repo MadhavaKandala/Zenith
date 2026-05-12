@@ -72,10 +72,19 @@ function discoverSkills(skillsDir: string): SkillRoute[] {
       const configPath = path.join(skillPath, 'skill.json')
 
       if (fs.existsSync(configPath)) {
+        let bridge: 'python' | 'nodejs' = 'python'
+        try {
+          const configStr = fs.readFileSync(configPath, 'utf8')
+          const config = JSON.parse(configStr)
+          if (config.bridge === 'nodejs') bridge = 'nodejs'
+        } catch (e) {
+          // Default to python on error
+        }
+
         routes.push({
           domain: domain.name,
           skill: skill.name,
-          bridge: 'python', // Default to Python bridge
+          bridge,
           configPath,
         })
       }
@@ -168,6 +177,47 @@ function executePythonSkill(intentObj: IntentObject): Promise<SkillExecutionResu
 }
 
 /**
+ * Execute a Node.js skill natively.
+ */
+async function executeNodeJsSkill(intentObj: IntentObject): Promise<SkillExecutionResult> {
+  const startTime = Date.now()
+  try {
+    const actionPathTs = path.join(process.cwd(), 'skills', intentObj.domain, intentObj.skill, 'src', 'actions', `${intentObj.action}.ts`)
+    const actionPathJs = path.join(process.cwd(), 'skills', intentObj.domain, intentObj.skill, 'src', 'actions', `${intentObj.action}.js`)
+    
+    let actionPath = ''
+    if (fs.existsSync(actionPathTs)) actionPath = actionPathTs
+    else if (fs.existsSync(actionPathJs)) actionPath = actionPathJs
+    else throw new Error(`Action module not found for ${intentObj.domain}.${intentObj.skill}.${intentObj.action}`)
+
+    // Dynamically import the skill action module
+    // We expect the module to export a function with the same name as the action, or a default function
+    const module = await import(actionPath)
+    const actionFn = module[intentObj.action] || module.default
+
+    if (typeof actionFn !== 'function') {
+      throw new Error(`Action function '${intentObj.action}' or default export not found in module`)
+    }
+
+    const result = await actionFn(intentObj)
+    const outputStr = typeof result === 'string' ? result : JSON.stringify(result)
+
+    return {
+      success: true,
+      output: outputStr,
+      executionTime: Date.now() - startTime
+    }
+  } catch (err: any) {
+    return {
+      success: false,
+      output: '',
+      executionTime: Date.now() - startTime,
+      error: err.message || String(err)
+    }
+  }
+}
+
+/**
  * Route an intent to the correct skill handler.
  */
 async function routeIntent(intentObj: IntentObject): Promise<SkillExecutionResult> {
@@ -194,12 +244,7 @@ async function routeIntent(intentObj: IntentObject): Promise<SkillExecutionResul
   if (matchedRoute.bridge === 'python') {
     return executePythonSkill(intentObj)
   } else if (matchedRoute.bridge === 'nodejs') {
-    return {
-      success: false,
-      output: '',
-      executionTime: 0,
-      error: `Node.js skill execution not implemented yet`,
-    }
+    return executeNodeJsSkill(intentObj)
   } else {
     return {
       success: false,
@@ -246,4 +291,4 @@ process.on('message', async (msg: { type: string; payload: IntentObject }) => {
 })
 
 // Export for testing
-export { discoverSkills, routeIntent, executePythonSkill, IntentObject, SkillExecutionResult }
+export { discoverSkills, routeIntent, executePythonSkill, executeNodeJsSkill, IntentObject, SkillExecutionResult }

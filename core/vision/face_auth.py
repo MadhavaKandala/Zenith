@@ -255,9 +255,6 @@ class FaceAuthenticator:
             if not cap.isOpened():
                 logger.error("Cannot open camera %d", camera_index)
                 return False, 999.0, "camera_error"
-        except Exception as exc:
-            logger.error("Failed to initialize video capture: %s", exc)
-            return False, 999.0, "camera_error"
 
             ret, frame = cap.read()
             if not ret:
@@ -270,8 +267,12 @@ class FaceAuthenticator:
             result = self.authenticate(temp_path)
             temp_path.unlink(missing_ok=True)
             return result
+        except Exception as exc:
+            logger.error("Failed to capture or authenticate: %s", exc)
+            return False, 999.0, "camera_error"
         finally:
-            cap.release()
+            if 'cap' in locals() and cap is not None:
+                cap.release()
 
     @property
     def enrolled_users(self) -> list[str]:
