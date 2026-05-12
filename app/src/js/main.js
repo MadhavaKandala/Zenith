@@ -1,4 +1,5 @@
 import { io } from 'socket.io-client'
+import { setOrbState } from './orb.js'
 import { forceVoiceTurn, toggleVoice } from './voice.js'
 
 // ── Globals ──────────────────────────────
@@ -15,12 +16,12 @@ window.submitText = () => {
   input.value = ''
   addMsg('YOU', text, 'user')
   logAct('Query sent', true)
-  setOrb('thinking')
+  setOrbState('thinking')
   socket.emit('utterance', { client: 'webapp', value: text })
 }
 window.onKey = (e) => { if (e.key === 'Enter') window.submitText() }
 window.clearChat = () => {
-  document.getElementById('messages').innerHTML = ''
+  document.getElementById('messages').replaceChildren()
   addMsg('ZENITH', 'Conversation cleared, sir.', 'agent')
 }
 
@@ -45,19 +46,37 @@ setInterval(updateClock, 1000)
 const canvas = document.getElementById('bg-canvas')
 if (canvas) {
   const ctx = canvas.getContext('2d')
-  canvas.width = window.innerWidth
-  canvas.height = window.innerHeight
-  
-  const particles = Array.from({length: 60}, () => ({
+  let animationFrame = 0
+  let canvasWidth = 0
+  let canvasHeight = 0
+
+  const resizeCanvas = () => {
+    const nextWidth = window.innerWidth
+    const nextHeight = window.innerHeight
+    if (nextWidth === canvasWidth && nextHeight === canvasHeight) return
+    canvasWidth = nextWidth
+    canvasHeight = nextHeight
+    canvas.width = nextWidth
+    canvas.height = nextHeight
+  }
+
+  resizeCanvas()
+
+  const particles = Array.from({ length: 60 }, () => ({
     x: Math.random() * canvas.width,
     y: Math.random() * canvas.height,
     vx: (Math.random() - 0.5) * 0.3,
     vy: (Math.random() - 0.5) * 0.3,
     size: Math.random() * 1.5 + 0.5,
-    alpha: Math.random() * 0.4 + 0.1,
+    alpha: Math.random() * 0.4 + 0.1
   }))
 
   function drawCanvas() {
+    if (document.hidden) {
+      animationFrame = 0
+      return
+    }
+
     ctx.clearRect(0, 0, canvas.width, canvas.height)
     particles.forEach(p => {
       p.x += p.vx; p.y += p.vy
@@ -70,14 +89,18 @@ if (canvas) {
       ctx.fillStyle = `rgba(0,212,255,${p.alpha})`
       ctx.fill()
     })
-    requestAnimationFrame(drawCanvas)
+    animationFrame = requestAnimationFrame(drawCanvas)
   }
-  drawCanvas()
 
-  window.addEventListener('resize', () => {
-    canvas.width = window.innerWidth
-    canvas.height = window.innerHeight
+  animationFrame = requestAnimationFrame(drawCanvas)
+
+  document.addEventListener('visibilitychange', () => {
+    if (!document.hidden && !animationFrame) {
+      animationFrame = requestAnimationFrame(drawCanvas)
+    }
   })
+
+  window.addEventListener('resize', resizeCanvas)
 }
 
 // ── Socket ────────────────────────────────
@@ -94,57 +117,35 @@ socket.on('answer', (data) => {
   removeTyping()
   const text = data.value || data.answer || JSON.stringify(data)
   addMsg('ZENITH', text, 'agent')
-  setOrb('idle')
+  setOrbState('idle')
   logAct('Response delivered', true)
 })
 
 socket.on('is-typing', (data) => {
   const isTyping = typeof data === 'boolean' ? data : data?.value
   if (isTyping) {
-    setOrb('thinking')
+    setOrbState('thinking')
     showTyping()
   } else {
     removeTyping()
   }
 })
 
-socket.on('zenith:state_change', (d) => setOrb(d.state))
+socket.on('zenith:state_change', (d) => setOrbState(d.state))
 socket.on('zenith:tool_call', (d) => logAct('Tool: ' + (d.tool || '—'), true))
-
-// ── Orb state ─────────────────────────────
-export function setOrb(state) {
-  document.body.className = state
-  const label = document.getElementById('orb-label')
-  const sub = document.getElementById('orb-sub')
-  const subs = {
-    idle: 'Ready for commands',
-    listening: 'Listening...',
-    thinking: 'Processing...',
-    speaking: 'Responding...',
-  }
-  if (label) label.textContent = state.toUpperCase()
-  if (sub) sub.textContent = subs[state] || ''
-
-  // Update voice chip
-  const chip = document.getElementById('chip-voice-text')
-  const dot = document.querySelector('#chip-voice .chip-dot')
-  if (chip) chip.textContent = state === 'idle' ? 'VOICE STANDBY' : ('VOICE ' + state.toUpperCase())
-  if (dot) {
-    dot.classList.toggle('inactive', state === 'idle')
-  }
-  const sysVoice = document.getElementById('sys-voice')
-  if (sysVoice) sysVoice.textContent = state === 'idle' ? 'STANDBY' : state.toUpperCase()
-}
 
 // ── Messages ──────────────────────────────
 function addMsg(sender, text, type) {
   const container = document.getElementById('messages')
   const row = document.createElement('div')
   row.className = 'msg-row ' + type
-  row.innerHTML = `
-    <div class="msg-sender">${sender}</div>
-    <div class="msg-bubble">${text}</div>
-  `
+  const senderNode = document.createElement('div')
+  senderNode.className = 'msg-sender'
+  senderNode.textContent = sender
+  const bubbleNode = document.createElement('div')
+  bubbleNode.className = 'msg-bubble'
+  bubbleNode.textContent = text
+  row.append(senderNode, bubbleNode)
   container.appendChild(row)
   container.scrollTop = container.scrollHeight
 }
@@ -155,14 +156,16 @@ function showTyping() {
   const container = document.getElementById('messages')
   typingEl = document.createElement('div')
   typingEl.className = 'msg-row agent'
-  typingEl.innerHTML = `
-    <div class="msg-sender">ZENITH</div>
-    <div class="msg-bubble">
-      <div class="typing-dots">
-        <span></span><span></span><span></span>
-      </div>
-    </div>
-  `
+  const senderNode = document.createElement('div')
+  senderNode.className = 'msg-sender'
+  senderNode.textContent = 'ZENITH'
+  const bubbleNode = document.createElement('div')
+  bubbleNode.className = 'msg-bubble'
+  const dots = document.createElement('div')
+  dots.className = 'typing-dots'
+  dots.append(document.createElement('span'), document.createElement('span'), document.createElement('span'))
+  bubbleNode.appendChild(dots)
+  typingEl.append(senderNode, bubbleNode)
   container.appendChild(typingEl)
   container.scrollTop = container.scrollHeight
 }
@@ -177,10 +180,14 @@ function logAct(text, highlight = false) {
   if (!list) return
   const item = document.createElement('div')
   item.className = 'act-item' + (highlight ? ' highlight' : '')
-  const now = new Date().toLocaleTimeString('en-IN', {
+  const timeNode = document.createElement('div')
+  timeNode.className = 'act-time'
+  timeNode.textContent = new Date().toLocaleTimeString('en-IN', {
     timeZone: 'Asia/Kolkata', hour12: false
   })
-  item.innerHTML = `<div class="act-time">${now}</div><div>${text}</div>`
+  const textNode = document.createElement('div')
+  textNode.textContent = text
+  item.append(timeNode, textNode)
   list.insertBefore(item, list.firstChild)
   while (list.children.length > 15) list.removeChild(list.lastChild)
 }

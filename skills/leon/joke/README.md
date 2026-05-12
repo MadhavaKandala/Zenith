@@ -1,22 +1,14 @@
-import utils
+# Joke
 
-# Skill database
-db = utils.db()['db']
+Domain: Leon
 
-table = utils.db()['table']
+This skill belongs to the Zenith modular skill system.
+It is triggered through trained intent models and executed through the Python bridge runtime.
 
-# Owner table
-owner_table = db.table('owner')
+Typical files in this directory:
+- src or action files for runtime logic
+- data for answers, entities, or language assets
+- config.sample.json for optional setup examples
 
-def upsert_owner(owner_name, owner_birth_date):
-	"""Save basic information about the owner"""
+This README was restored to documentation form during repository cleanup.
 
-	owner_table.upsert(table.Document({
-		'name': owner_name,
-		'birth_date': owner_birth_date
-	}, doc_id=0))
-
-def get_owner():
-	"""Get owner's basic information"""
-
-	return owner_table.get(doc_id=0)

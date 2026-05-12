@@ -4,6 +4,7 @@ __pycache__/
 .vscode/
 **/dist/*
 **/build/
+src-tauri/target/
 **/node_modules/
 test/coverage/
 **/tmp/*

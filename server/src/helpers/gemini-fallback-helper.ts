@@ -9,6 +9,9 @@ interface GeminiGenerateContentResponse {
 }
 
 interface FetchResponseLike {
+  ok?: boolean
+  status?: number
+  statusText?: string
   json(): Promise<GeminiGenerateContentResponse>
 }
 
@@ -36,6 +39,47 @@ function getIndiaDateTimeString(): string {
   }).format(new Date())
 }
 
+async function fetchWithRetry(
+  input: string,
+  init: {
+    method?: string
+    headers?: Record<string, string>
+    body?: string
+  },
+  attempts = 2
+): Promise<FetchResponseLike> {
+  let lastError: Error | null = null
+
+  for (let attempt = 1; attempt <= attempts; attempt += 1) {
+    try {
+      const response = await Promise.race<FetchResponseLike>([
+        fetch(input, init),
+        new Promise<never>((_resolve, reject) => {
+          setTimeout(() => {
+            reject(new Error('Gemini fallback timed out'))
+          }, 20_000)
+        })
+      ])
+
+      if (response.ok === false) {
+        throw new Error(
+          `Gemini fallback failed with status ${response.status ?? 'unknown'} ${response.statusText ?? ''}`.trim()
+        )
+      }
+
+      return response
+    } catch (error) {
+      lastError = error instanceof Error ? error : new Error(String(error))
+
+      if (attempt < attempts) {
+        await new Promise((resolve) => setTimeout(resolve, 400 * attempt))
+      }
+    }
+  }
+
+  throw lastError ?? new Error('Gemini fallback failed')
+}
+
 export async function getGeminiFallbackAnswer(
   utterance: string
 ): Promise<string> {
@@ -51,37 +95,30 @@ export async function getGeminiFallbackAnswer(
   }
 
   try {
-    const geminiRes = await Promise.race<FetchResponseLike>([
-      fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`,
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            contents: [
-              {
-                parts: [
-                  {
-                    text:
-                      'You are Zenith, a personal AI assistant like JARVIS from Iron Man.\n' +
-                      'Be concise, helpful, and address user as "sir".\n' +
-                      `The current time is ${getIndiaDateTimeString()} IST.\n` +
-                      'You are located in India and must use IST timezone.\n' +
-                      'Answer in 1-3 sentences maximum.\n\n' +
-                      `User: ${utterance}`
-                  }
-                ]
-              }
-            ]
-          })
-        },
-      ),
-      new Promise<never>((_resolve, reject) => {
-        setTimeout(() => {
-          reject(new Error('Gemini fallback timed out'))
-        }, 20_000)
-      })
-    ])
+    const geminiRes = await fetchWithRetry(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents: [
+            {
+              parts: [
+                {
+                  text:
+                    'You are Zenith, a personal AI assistant like JARVIS from Iron Man.\n' +
+                    'Be concise, helpful, and address user as "sir".\n' +
+                    `The current time is ${getIndiaDateTimeString()} IST.\n` +
+                    'You are located in India and must use IST timezone.\n' +
+                    'Answer in 1-3 sentences maximum.\n\n' +
+                    `User: ${utterance}`
+                }
+              ]
+            }
+          ]
+        })
+      }
+    )
     const data = (await geminiRes.json()) as GeminiGenerateContentResponse
 
     return (

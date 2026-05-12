@@ -337,7 +337,8 @@ function handleTranscriptSegments(segments, participant) {
   const isUser = participant?.isLocal ?? false
   updateTranscript(isUser ? 'user' : 'agent', text)
   setLastVoiceEvent(
-    isUser ? 'Your speech is being transcribed in real time.' : 'Zenith response transcript updated.'
+    isUser ? 'Your speech is being transcribed in real time.' : 'Zenith response transcript updated.',
+    { persist: false }
   )
 
   const finalSegments = segments.filter(

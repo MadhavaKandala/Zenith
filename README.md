@@ -93,7 +93,7 @@ Most AI assistants are cloud UIs with fixed behavior. ZENITH is an execution lay
 Mic Input → LiveKit Transport → Groq Whisper STT
   → LLM Reasoning (Gemini primary, Groq/OpenRouter fallback)
     → [Optional MCP Tool Call]
-      → Google Cloud TTS → Speaker Output
+      → ElevenLabs TTS (Windows SAPI fallback) → Speaker Output
 ```
 
 ### Provider Fallback Chain
@@ -113,7 +113,7 @@ Mic Input → LiveKit Transport → Groq Whisper STT
 | Layer | Technologies |
 |---|---|
 | LLM | Google Gemini 2.5 Flash, Groq Llama 3.3, OpenRouter |
-| STT / TTS | Groq Whisper STT, Google Cloud TTS |
+| STT / TTS | Groq Whisper STT, ElevenLabs TTS, Windows SAPI fallback |
 | Voice Transport | LiveKit |
 | Tool Server | FastMCP |
 | Backend | Node.js, Python |
@@ -199,6 +199,13 @@ cd voice && uv run python agent.py dev
 Then open:
 - Dashboard: `http://localhost:1337`
 - Voice playground: `https://agents-playground.livekit.io`
+
+### Voice Controls
+
+- `ACTIVATE VOICE` starts a LiveKit voice room.
+- `END VOICE` fully disconnects the room, even if Zenith is still connecting or thinking.
+- `ANSWER NOW` pauses the microphone and forces Zenith to answer from captured speech.
+- `RESUME MIC` reopens the microphone without reconnecting the whole session.
 
 ### PM2 (Recommended for persistent sessions)
 
